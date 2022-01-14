@@ -217,9 +217,9 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account#:~:text=Making%20the%20access%20token%20request
      *
-     * $return void
+     * $return object
      */
-    protected function sendAuthRequest() : void
+    protected function sendAuthRequest() : object
     {
         $response = Http::asForm()->post(
             $this->auth_base_url,
