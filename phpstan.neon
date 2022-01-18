@@ -1,0 +1,20 @@
+includes:
+    - ./vendor/nunomaduro/larastan/extension.neon
+
+parameters:
+
+    paths:
+        - src
+
+    # The level 9 is the highest level
+    level: 9
+
+    ignoreErrors:
+        - '#Access to an undefined property object::\$private_key.#'
+        - '#Access to an undefined property object::\$client_email.#'
+        - '#Access to an undefined property object::\$access_token.#'
+    excludePaths:
+        - ./*/*/FileToBeExcluded.php
+
+    checkMissingIterableValueType: false
+
