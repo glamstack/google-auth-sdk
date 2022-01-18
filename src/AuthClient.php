@@ -9,8 +9,8 @@ use Illuminate\Support\Str;
 
 class AuthClient
 {
-    // Standard parameters for buildling JWT request with Google OAuth Server.
-    // They are put here for easy changing if neccessary
+    // Standard parameters for building JWT request with Google OAuth Server.
+    // They are put here for easy changing if necessary
     private string $auth_base_url = 'https://oauth2.googleapis.com/token';
     private string $auth_algorithm = 'RS256';
     private string $auth_type = 'JWT';
@@ -35,13 +35,12 @@ class AuthClient
      * with the token
      * 
      * @param string $file_path (Optional) The file path of the Google JSON key
-     * used for Service Account authentication. The varaible is set, it will 
+     * used for Service Account authentication. The variable is set, it will 
      * override the config/glamstack-google-auth.php and/or .env value for 
      * where the file is stored
      *
-     * @return void
      */
-    public function __construct(array $api_scopes, string $file_path = null) : void
+    public function __construct(array $api_scopes, string $file_path = null)
     {
 
         // Create a comma space string of the provided $api_scopes
@@ -68,14 +67,14 @@ class AuthClient
         // Create the signature to append to the JWT
         $signature = $this->createSignature($jwt_headers, $jwt_claim);
 
-        // Set the class jwt varaible to the Google OAuth2 required string
+        // Set the class jwt variable to the Google OAuth2 required string
         $this->jwt = $jwt_headers.'.'.$jwt_claim.'.'.$signature;
     }
 
     /**
      * Set the class variable $file_path to either the provided $file_path
      * parameter from the construct method. If no $file_path parameter is
-     * provided in the construct method then set the class varaible
+     * provided in the construct method then set the class variable
      * $file_path to the file path provided in the "GOOGLE_JSON_FILE_PATH" env
      * variable.
      *
@@ -85,6 +84,7 @@ class AuthClient
      */
     protected function setFilePath(?string $file_path){
         if($file_path == null){
+            /** @phpstan-ignore-next-line */
             $this->file_path = config(
                 'glamstack-google-workspace.google-auth.google_json_file_path'
             );
@@ -103,7 +103,7 @@ class AuthClient
      */
     protected function parseJsonFile(string $file_path) : object
     {
-        $file_contents = json_decode(
+        $file_contents = (object) json_decode(
             (string) file_get_contents(base_path($file_path))
         );
         return $file_contents;
@@ -155,7 +155,7 @@ class AuthClient
             'typ' => $this->auth_type,
         ];
         $encoded_jwt_header = $this->base64_url_encode(
-            json_encode($jwt_header)
+            (string) json_encode($jwt_header)
         );
         return $encoded_jwt_header;
     }
@@ -178,7 +178,7 @@ class AuthClient
             'sub' => $this->subject_email
         ];
         $encoded_jwt_claim = $this->base64_url_encode(
-            json_encode($jwt_claim)
+            (string) json_encode($jwt_claim)
         );
         return $encoded_jwt_claim;
     }
@@ -207,10 +207,11 @@ class AuthClient
         $key_id = openssl_pkey_get_private($this->private_key);
 
         // Create the open SSL Signature using the provided inputs and 
-        // encrytion method
+        // encryption method
         openssl_sign(
             $jwt_header.'.'.$jwt_claim,
             $this->private_key,
+            /** @phpstan-ignore-next-line */
             $key_id,
             $this->encrypt_method
         );
