@@ -23,7 +23,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Glamstack\\GoogleWorkspace\\": "src/"
+            "Glamstack\\GoogleAuth\\": "src/"
         }
     },
     "extra": {
