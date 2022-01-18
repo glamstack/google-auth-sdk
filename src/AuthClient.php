@@ -106,17 +106,18 @@ class AuthClient
     }
 
     /**
-     * Utilize the Google JSON key contents to set the class varaibles
+     * Utilize the Google JSON key contents to set the class variables
      * `private_key` and `client_email`
      *
-     * @param object $file_contents The json_decoded Google JSON key token
+     * @param object $json_file_contents The json_decoded Google JSON key token
      *
      * @return void
      */
-    protected function setAuthParameters(object $jsonFileContents) : void
+    protected function setAuthParameters(object $json_file_contents) : void
     {
-        $this->private_key = $jsonFileContents->private_key;
-        $this->client_email = $jsonFileContents->client_email;
+        $this->private_key = $json_file_contents->private_key;
+        $this->client_email = $json_file_contents->client_email;
+    }
     }
 
     /**
