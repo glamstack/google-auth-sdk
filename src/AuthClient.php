@@ -23,6 +23,7 @@ class AuthClient
     private string $api_scopes;
     private string $access_token;
     private string $file_path;
+    private string $subject_email;
 
     /**
      * This function takes care of configuring the JWT that is used for the
@@ -54,6 +55,9 @@ class AuthClient
 
         // Set the Google Authorization Parameters from the $file_contents
         $this->setAuthParameters($file_contents);
+
+        // Set the Google Subject email
+        $this->setSubjectEmail();
 
         // Create the encrypted JWT Headers
         $jwt_headers = $this->createJwtHeader();
@@ -118,6 +122,23 @@ class AuthClient
         $this->private_key = $json_file_contents->private_key;
         $this->client_email = $json_file_contents->client_email;
     }
+
+    /**
+     * Check if the 'GOOGLE_SUBJECT_EMAIL' variable is set in `.env`. If it is
+     * set the class variable `subject_email` to the environment variable. 
+     * If it is not set we will use the client_email from the JSON token.
+     *
+     * @return void
+     */
+    protected function setSubjectEmail() : void
+    {
+        if(config('glamstack-google-auth.google-auth.google_subject_email')){
+            /** @phpstan-ignore-next-line */
+            $this->subject_email = config('glamstack-google-auth.google-auth.google_subject_email');
+        }
+        else{
+            $this->subject_email = $this->client_email;
+        }
     }
 
     /**
@@ -153,7 +174,8 @@ class AuthClient
             'scope' => $this->api_scopes,
             'aud' => $this->auth_base_url,
             'exp' => time()+3600,
-            'iat' => time()
+            'iat' => time(),
+            'sub' => $this->subject_email
         ];
         $encoded_jwt_claim = $this->base64_url_encode(
             json_encode($jwt_claim)
