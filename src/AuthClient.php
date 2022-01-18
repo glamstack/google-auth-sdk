@@ -260,15 +260,7 @@ class AuthClient
      * @return string
      */
     public function authenticate(){
-        $auth_response = $this->sendAuthRequest();
-
-        // If there is more than a single scope the Google OAuth2 Server will
-        // send back an `id_token` instead of an `access_token`
-        if(property_exists($auth_response, 'id_token')){
-            return $auth_response->id_token;
-        }
-        elseif(property_exists($auth_response, 'access_token')){
-            return $auth_response->access_token;
-        }
+        $this->access_token = $this->sendAuthRequest()->access_token;
+        return $this->access_token;
     }
 }
