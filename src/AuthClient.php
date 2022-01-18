@@ -43,8 +43,8 @@ class AuthClient
     public function __construct(array $api_scopes, string $file_path = null) : void
     {
 
-        // Create a comma sepearted string of the provided $api_scopes
-        $this->api_scopes = collect($api_scopes)->implode(',');
+        // Create a comma space string of the provided $api_scopes
+        $this->api_scopes = collect($api_scopes)->implode(' ');
 
         // Set the class file_path variable
         $this->setFilePath($file_path);
