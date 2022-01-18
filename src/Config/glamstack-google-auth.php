@@ -22,7 +22,7 @@ return [
      * like.
      * Ex. ['single', 'glamstack-google-auth']
      *
-     * You can also add additioal channels that logs should be sent to.
+     * You can also add additional channels that logs should be sent to.
      * Ex. ['single', 'glamstack-google-auth', 'slack']
      *
      * https://laravel.com/docs/8.x/logging
@@ -38,5 +38,6 @@ return [
      */
     'google-auth' => [
         'google_json_file_path' => env('GOOGLE_JSON_FILE_PATH'), 
+        'google_subject_email' => env('GOOGLE_SUBJECT_EMAIL')
     ],
 ];
