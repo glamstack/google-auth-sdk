@@ -50,7 +50,6 @@ class AuthClient
         string $file_path = null
     )
     {
-
         // Set the class instance_key variable.
         $this->setInstanceKey($instance_key);
 
@@ -120,8 +119,7 @@ class AuthClient
     {
         if(!$api_scopes){
             $this->api_scopes = collect(
-                config('glamstack-google-auth.' . $this->instance_key .
-                '.api_scopes')
+                config('glamstack-google-auth.' . $this->instance_key . '.api_scopes')
             )->implode(' ');
         }
         else{

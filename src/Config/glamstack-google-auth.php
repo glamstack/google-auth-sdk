@@ -14,12 +14,11 @@ return [
      * be sent to the default log file for Laravel that you have configured
      * in config/logging.php which is usually storage/logs/laravel.log.
      *
-     * If you would like to see Google Workspace API logs in a separate log
-     * file that is easier to triage without unrelated log messages, you can
-     * create a custom log channel and add the channel name to the array. For
-     * example, we recommend creating a custom channel with the name
-     * `glamstack-google-auth`, however you can choose any name you would
-     * like.
+     * If you would like to see Google API logs in a separate log file that 
+     * is easier to triage without unrelated log messages, you can create a 
+     * custom log channel and add the channel name to the array. For example, 
+     * we recommend creating a custom channel (ex. `glamstack-google-auth`), 
+     * however you can choose any name you would like.
      * Ex. ['single', 'glamstack-google-auth']
      *
      * You can also add additional channels that logs should be sent to.
@@ -34,14 +33,13 @@ return [
      * ------------------------------------------------------------------------
      * Google Auth Configuration
      * ------------------------------------------------------------------------
-     * In order to allow for least privilege access and multiple tokens the
+     * In order to allow for least privilege access and multiple tokens, the
      * SDK uses this configuration section to configure the API Scopes for
      * each token, as well as any other optional configurations that are
-     * needed for any specific Google API endpoints
+     * needed for any specific Google API endpoints.
      *
      * Ex. You can configure the Subject Email for a Workspace token that
-     * allows for API's that require
-     * [Domain-Wide Delegation of Authority](https://developers.google.com/admin-sdk/directory/v1/guides/delegation)
+     * allows for API's that require [Domain-Wide Delegation of Authority](https://developers.google.com/admin-sdk/directory/v1/guides/delegation).
      *
      * The top level of the configuration i.e `workspace` will be the
      * instance_key when initializing the SDK and will be used to determine
@@ -54,7 +52,15 @@ return [
      * Will search for the Google JSON file under
      * `storage/keys/google-auth-sdk/workspace.json`
      *
-     * By default the SDK will set the instance_key to `workspace`
+     * By default the SDK will use configuration for the instance_key 
+     * `workspace`, unless you override this in your `.env` file using 
+     * the `GOOGLE_AUTH_INSTANCE` variable, or pass the instance key 
+     * as an argument when using the `ApiClient`.
+     * 
+     * The list of OAUTH scopes for Google APIs can be found in the docs. 
+     * See the `README.md` for more instructions and security practices 
+     * for using scopes with your service account JSON keys.
+     * https://developers.google.com/identity/protocols/oauth2/scopes
      */
     'instance' => env('GOOGLE_AUTH_INSTANCE', 'workspace'),
     'workspace' => [
