@@ -4,7 +4,7 @@ return [
 
     /**
      * ------------------------------------------------------------------------
-     * Log Channel Name
+     * Log Channels
      * ------------------------------------------------------------------------
      * Throughout the SDK, we use the config('glamstack-google-auth.log_channels')
      * array variable to allow you to set the log channels (custom log stack)
@@ -14,11 +14,11 @@ return [
      * be sent to the default log file for Laravel that you have configured
      * in config/logging.php which is usually storage/logs/laravel.log.
      *
-     * If you would like to see Google Workspace API logs in a separate log 
-     * file that is easier to triage without unrelated log messages, you can 
-     * create a custom log channel and add the channel name to the array. For 
-     * example, we recommend creating a custom channel with the name 
-     * `glamstack-google-auth`, however you can choose any name you would 
+     * If you would like to see Google Workspace API logs in a separate log
+     * file that is easier to triage without unrelated log messages, you can
+     * create a custom log channel and add the channel name to the array. For
+     * example, we recommend creating a custom channel with the name
+     * `glamstack-google-auth`, however you can choose any name you would
      * like.
      * Ex. ['single', 'glamstack-google-auth']
      *
