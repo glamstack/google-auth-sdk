@@ -176,16 +176,18 @@ class AuthClient
 
     /**
      * Check if the 'GOOGLE_SUBJECT_EMAIL' variable is set in `.env`. If it is
-     * set the class variable `subject_email` to the environment variable. 
+     * set the class variable `subject_email` to the environment variable.
      * If it is not set we will use the client_email from the JSON token.
      *
      * @return void
      */
     protected function setSubjectEmail() : void
     {
-        if(config('glamstack-google-auth.google-auth.google_subject_email')){
+        if(config('glamstack-google-auth.' . $this->instance_key . '.email') != null){
             /** @phpstan-ignore-next-line */
-            $this->subject_email = config('glamstack-google-auth.google-auth.google_subject_email');
+            $this->subject_email = config(
+                'glamstack-google-auth.' . $this->instance_key . '.email'
+            );
         }
         else{
             $this->subject_email = $this->client_email;
