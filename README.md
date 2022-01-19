@@ -23,8 +23,6 @@ This package is only intended to authenticate with the Google OAuth2 Sever utili
 
 The token will be in the form of a JSON file which by default the package will look under the `storage/keys/glamstack-google-auth/` directory of your Laravel application. For a file named `workspace.json`. The file path is specified in `config/glamstack-google-auth.php` and can be overridden by setting the `GOOGLE_AUTH_INSTANCE` environment variable in your `.env` file or by overriding the `$file_path` during initialization of the SDK.
 
-The initialization of the SDK by default does not require any parameters to be based however it can take the following parameters:
-`(string) $instance_key`, `(array) $api_scopes`, and `(string) $file_path`
 
 ## Installation
 
@@ -81,15 +79,24 @@ Update the `channels.stack.channels` array to include the array key (ex.  `glams
 
 #### Google Instance Configuration
 
-By default the Google Instance is set to `workspace`. However, this can be changed either with by initializing the SDK with a new instance_key or by changing the .env variable `GOOGLE_AUTH_INSTANCE`.
+We use the concept of "instance keys" to define different pre-configured connections that are used by the `AuthClient` to determine the scopes, email, and filename of the JSON API token to use. By default, the SDK will use the `workspace` instance key. However, this can be changed by updating the `.env` variable `GOOGLE_AUTH_INSTANCE` to a different instance key defined in the `config/glamstack-google-auth.php` file. 
 
 ```bash
-GOOGLE_AUTH_INSTANCE=""
+GOOGLE_AUTH_INSTANCE="my_instance_key"
 ```
+
+If you want to use a specific instance key when using the `AuthClient` that is different from the `GOOGLE_AUTH_INSTANCE` variable, you can pass the instance key as a construct argument for the `AuthClient`.
+
+```php
+$google_auth_client = new \Glamstack\GoogleAuth\AuthClient('my_instance_key');
+\```
+// FIXME: Remove code block leading \ that escapes backticks due to MR suggestion limitations.
 
 #### Google Service Account JSON File
 
-By default the SDK will load the Google Service Account JSON File from the `storage/keys/glamstack-google-auth/workspace.json`. There are two ways to change the default path of which the file is loaded from.
+By default the SDK will load the Google Service Account JSON File from the `storage/keys/glamstack-google-auth/{instance_key}.json`. With the default instance key of `workspace`, this will be `workspace.json`. 
+
+There are two ways to change the default path of which the file is loaded from.
     1. Change the instance from `workspace` to the desired Google Instance Configuration during the initialization of the SDK.
 
 ```php
