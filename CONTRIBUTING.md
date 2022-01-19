@@ -80,4 +80,4 @@ php artisan vendor:publish --tag=glamstack-google-auth
 
 ### Caching Problems
 
-If you run into any classes or files that are renamed and are throwing `Not Found` errors, you may need to use the `composer dump-autoload` command.i
+If you run into any classes or files that are renamed and are throwing `Not Found` errors, you may need to use the `composer dump-autoload` command.
