@@ -52,6 +52,8 @@ class AuthClient
 
         // Create a comma space string of the provided $api_scopes
         $this->api_scopes = collect($api_scopes)->implode(' ');
+        // Set the class instance_key variable.
+        $this->setInstanceKey($instance_key);
 
         // Set the class file_path variable
         $this->setFilePath($file_path);
@@ -79,11 +81,26 @@ class AuthClient
     }
 
     /**
-     * Set the class variable $file_path to either the provided $file_path
-     * parameter from the construct method. If no $file_path parameter is
-     * provided in the construct method then set the class variable
-     * $file_path to the file path provided in the "GOOGLE_JSON_FILE_PATH" env
-     * variable.
+     * Set the instance_key class variable. The instance_key variable by default
+     * will be set to `workspace`. This can be overridden when initializing the
+     * SDK with a different instance key which is passed into this function to
+     * set the class variable to the provided key.
+     *
+     * @param string $instance_key (Optional) The instance key to use from the
+     * configuration file.
+     *
+     * @return void
+     */
+    protected function setInstanceKey(?string $instance_key) : void
+    {
+        if($instance_key == null){
+            $this->instance_key = config(
+                'glamstack-google-auth.instance'
+            );
+        } else {
+            $this->instance_key = $instance_key;
+        }
+    }
      *
      * @param ?string $file_path The file path to set for the Google JSON token
      *
