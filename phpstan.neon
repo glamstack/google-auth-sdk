@@ -13,6 +13,7 @@ parameters:
         - '#Access to an undefined property object::\$private_key.#'
         - '#Access to an undefined property object::\$client_email.#'
         - '#Access to an undefined property object::\$access_token.#'
+        - '#Access to an undefined property Glamstack\\GoogleAuth\\AuthClient::\$instance_key.#'
     excludePaths:
         - ./*/*/FileToBeExcluded.php
 
