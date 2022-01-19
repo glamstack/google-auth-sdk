@@ -55,6 +55,9 @@ class AuthClient
         // Set the class instance_key variable.
         $this->setInstanceKey($instance_key);
 
+        // Set the class api_scopes variable.
+        $this->setApiScopes($api_scopes);
+
         // Set the class file_path variable
         $this->setFilePath($file_path);
 
