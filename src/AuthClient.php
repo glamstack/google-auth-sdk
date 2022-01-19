@@ -57,7 +57,7 @@ class AuthClient
         $this->setApiScopes($api_scopes);
 
         // Set the class file_path variable
-        $this->setFilePath($file_path, $instance_key);
+        $this->setFilePath($file_path);
 
         // Get the file contents from the Google JSON key
         $file_contents = $this->parseJsonFile($this->file_path);
