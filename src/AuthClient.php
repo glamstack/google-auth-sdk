@@ -101,6 +101,34 @@ class AuthClient
             $this->instance_key = $instance_key;
         }
     }
+
+
+    /**
+     * Set the API scopes for the Google Authentication API token. The scope
+     * will default to the configuration file for the instance, and can be
+     * overridden with the $api_scopes variable being set during initialization.
+     *
+     * @param ?array $api_scopes (Optional) API Scopes to be set. This will
+     * override the configuration file API Scope settings.
+     *
+     * @return void
+     */
+    protected function setApiScopes(?array $api_scopes) : void
+    {
+        if(!$api_scopes){
+            $this->api_scopes = collect(
+                config('glamstack-google-auth.' . $this->instance_key .
+                '.api_scopes')
+            )->implode(' ');
+        }
+        else{
+            $this->api_scopes = collect($api_scopes)->implode(' ');
+        }
+    }
+
+    /**
+     * Set the class variable $file_path to either the provided $instance_key
+     * configuration or the $file_path provided from class initialization.
      *
      * @param ?string $file_path The file path to set for the Google JSON token
      *
