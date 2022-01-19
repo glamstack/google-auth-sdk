@@ -195,7 +195,7 @@ class AuthClient
     }
 
     /**
-     * Create and encode the required JWT Headers for Google OAuth2 
+     * Create and encode the required JWT Headers for Google OAuth2
      * authentication
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account#:~:text=Forming%20the%20JWT%20header
@@ -216,7 +216,7 @@ class AuthClient
     /**
      * Create and encode the required JWT Claims for Google OAuth2
      * authentication
-     * 
+     *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account#:~:text=Forming%20the%20JWT%20claim%20set
      *
      * @return string
@@ -246,7 +246,7 @@ class AuthClient
      *
      * @see https://www.php.net/manual/en/function.openssl-pkey-get-private.php
      *
-     * @param string $jwt_header The JWT Header string required for Google 
+     * @param string $jwt_header The JWT Header string required for Google
      * OAuth2 authentication
      *
      * @param string $jwt_claim The JWT Claim string required for Google OAuth2
@@ -259,7 +259,7 @@ class AuthClient
         // Parse the private key and prepare it for use
         $key_id = openssl_pkey_get_private($this->private_key);
 
-        // Create the open SSL Signature using the provided inputs and 
+        // Create the open SSL Signature using the provided inputs and
         // encryption method
         openssl_sign(
             $jwt_header.'.'.$jwt_claim,
@@ -310,7 +310,7 @@ class AuthClient
 
     /**
      * Send authentication request to the Google OAuth2 Server
-     * 
+     *
      * @return string
      */
     public function authenticate(){
