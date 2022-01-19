@@ -17,6 +17,7 @@ class AuthClient
     private string $auth_grant_type = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
     private string $encrypt_method = 'sha256';
 
+    private string $instance_key;
     private string $private_key;
     private string $client_email;
     private string $jwt;
