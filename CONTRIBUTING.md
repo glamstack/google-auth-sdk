@@ -2,45 +2,27 @@
 
 This project is in early development and not all processes have been formalized yet.
 
-Please consider these to be guidelines. If in doubt, please create an issue and
-tag the [maintainers](README.md#maintainers) to discuss.
+Please consider these to be guidelines. If in doubt, please create an issue and tag the [maintainers](README.md#maintainers) to discuss.
 
 ## Feature Requests and Ideas
 
-Please [create an issue](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-auth-sdk/-/issues)
-and describe what you'd like to see. Since this project is designed as an
-internal tool, we will help where we can but no guarantees.
+Please [create an issue](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-auth-sdk/-/issues) and describe what you'd like to see. Since this project is designed as an internal tool, we will help where we can but no guarantees.
 
 ## Code Contributions
 
-Please create an issue first to document the purpose of the contribution from
-a changelog and release notes perspective. After the issue is created, create
-a merge request from inside the issue, then checkout the branch that was
-created automatically for the issue and merge request. By creating the merge
-request from inside the issue, everything stays connected automatically and
-there are no name disparities.
+Please create an issue first to document the purpose of the contribution from a changelog and release notes perspective. After the issue is created, create a merge request from inside the issue, then checkout the branch that was created automatically for the issue and merge request. By creating the merge request from inside the issue, everything stays connected automatically and there are no name disparities.
 
-Due to the volume of commits in merge requests, MR comments are easy to
-overlook. Please have any discussions in the comments of the issue when possible.
+Due to the volume of commits in merge requests, MR comments are easy to overlook. Please have any discussions in the comments of the issue when possible.
 
-All merge requests can be assigned to one or all of the maintainers at your
-discretion. It is helpful to comment in the issue when you're ready to merge
-with any context that the maintainer/reviewer should know or be on the look
-out for.
+All merge requests can be assigned to one or all of the maintainers at your discretion. It is helpful to comment in the issue when you're ready to merge with any context that the maintainer/reviewer should know or be on the look out for.
 
 ## Environment Configuration
 
 ### Configuring Your Development Environment with Working Copies of Packages
 
-When you run `composer install`, you will get the latest copy of the packages
-from the GitHub and GitLab repositories. However, you won't be able to see
-real-time changes if you change any code in the packages.
+When you run `composer install`, you will get the latest copy of the packages from the GitHub and GitLab repositories. However, you won't be able to see real-time changes if you change any code in the packages.
 
-You can mitigate this problem by creating a local symlink (with resolved
-namespaces) for the package inside of your application that you're using for
-development and testing. By symlinking the packages into the newly created
-`packages` directory, you'll be able to preview and test your work without
-doing any Git commits (bad practice).
+You can mitigate this problem by creating a local symlink (with resolved namespaces) for the package inside of your application that you're using for development and testing. By symlinking the packages into the newly created `packages` directory, you'll be able to preview and test your work without doing any Git commits (bad practice).
 
 ```bash
 # Pre-Requisite (you should already have this)
@@ -59,9 +41,7 @@ ln -s ~/Sites/google-auth-sdk google-auth-sdk
 
 ### Application Composer
 
-Update the `composer.json` file in your testing application (not the package)
-to add the package to the `autoload.psr-4` array (append the array, don't
-replace anything).
+Update the `composer.json` file in your testing application (not the package) to add the package to the `autoload.psr-4` array (append the array, don't replace anything).
 
 ```json
 # ~/Sites/gitlab-access-manager-app/composer.json
@@ -81,9 +61,7 @@ Credit: <https://laravel-news.com/developing-laravel-packages-with-local-compose
 ```bash
 cd ~/Sites/gitlab-access-manager-app
 
-composer config repositories.local 
-'{"type": "path", "url": "packages/glamstack/google-auth-sdk"}'
---file composer.json
+composer config repositories.local '{"type": "path", "url": "packages/glamstack/google-auth-sdk"}' --file composer.json
 
 composer require glamstack/google-auth-sdk
 
