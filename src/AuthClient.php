@@ -57,7 +57,7 @@ class AuthClient
         $this->setApiScopes($api_scopes);
 
         // Set the class file_path variable
-        $this->setFilePath($file_path);
+        $this->setFilePath($file_path, $instance_key);
 
         // Get the file contents from the Google JSON key
         $file_contents = $this->parseJsonFile($this->file_path);
@@ -137,12 +137,10 @@ class AuthClient
      */
     protected function setFilePath(?string $file_path){
         if($file_path == null){
-            /** @phpstan-ignore-next-line */
-            $this->file_path = config(
-                'glamstack-google-workspace.google-auth.google_json_file_path'
+            $this->file_path = storage_path(
+                'keys/glamstack-google-auth/'. $this->instance_key . '.json'
             );
-        }
-        else{
+        } else {
             $this->file_path = $file_path;
         }
     }
@@ -157,7 +155,7 @@ class AuthClient
     protected function parseJsonFile(string $file_path) : object
     {
         $file_contents = (object) json_decode(
-            (string) file_get_contents(base_path($file_path))
+            (string) file_get_contents($file_path)
         );
         return $file_contents;
     }
