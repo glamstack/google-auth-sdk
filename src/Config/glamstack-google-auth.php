@@ -66,10 +66,25 @@ return [
     'workspace' => [
         'api_scopes' => [
             'https://www.googleapis.com/auth/admin.directory.user',
+            //'https://www.googleapis.com/auth/admin.directory.group',
+            //'https://www.googleapis.com/auth/admin.directory.group.member',
+            //'https://www.googleapis.com/auth/admin.directory.orgunit',
+            //'https://www.googleapis.com/auth/drive',
+            //'https://www.googleapis.com/auth/spreadsheets',
+            //'https://www.googleapis.com/auth/presentations',
+            //'https://www.googleapis.com/auth/apps.groups.settings',
+            //'https://www.googleapis.com/auth/admin.reports.audit.readonly',
+            //'https://www.googleapis.com/auth/admin.reports.usage.readonly',
         ],
         'email' => env('GOOGLE_AUTH_WORKSPACE_EMAIL'),
     ],
     'gcp_project_1' => [
-        'api_scopes' => env('GOOGLE_AUTH_GCP_PROEJCT_1_API_SCOPES'),
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/cloud-platform',
+            //'https://www.googleapis.com/auth/compute',
+            //'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            //'https://www.googleapis.com/auth/cloud-billing',
+            //'https://www.googleapis.com/auth/monitoring.read',
+        ],
     ]
 ];
