@@ -31,16 +31,23 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account
      *
-     * @param array $api_scopes The Google API Scopes that will be used with 
-     * with the token
-     * 
-     * @param string $file_path (Optional) The file path of the Google JSON key
-     * used for Service Account authentication. The variable is set, it will 
-     * override the config/glamstack-google-auth.php and/or .env value for 
-     * where the file is stored
+     * @param string $instance_key (Optional) The instance key to use from the
+     * configuration file to set the appropriate Google Auth Settings.
+     * Default: `workspace`
      *
+     * @param array $api_scopes (Optional) The Google API Scopes that will be
+     * used with the token
+     *
+     * @param string $file_path (Optional) The file path of the Google JSON key
+     * used for Service Account authentication. This parameter should only be
+     * used if you are storing your JSON key outside of the
+     * `storage/keys/glamstack-google-auth/` directory of your application
      */
-    public function __construct(array $api_scopes, string $file_path = null)
+    public function __construct(
+        string $instance_key = null,
+        array $api_scopes = [],
+        string $file_path = null
+    )
     {
 
         // Create a comma space string of the provided $api_scopes
