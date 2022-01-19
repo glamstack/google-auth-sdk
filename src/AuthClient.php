@@ -96,6 +96,7 @@ class AuthClient
     protected function setInstanceKey(?string $instance_key) : void
     {
         if($instance_key == null){
+            /** @phpstan-ignore-next-line */
             $this->instance_key = config(
                 'glamstack-google-auth.instance'
             );
