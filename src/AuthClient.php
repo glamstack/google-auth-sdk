@@ -50,8 +50,6 @@ class AuthClient
     )
     {
 
-        // Create a comma space string of the provided $api_scopes
-        $this->api_scopes = collect($api_scopes)->implode(' ');
         // Set the class instance_key variable.
         $this->setInstanceKey($instance_key);
 
