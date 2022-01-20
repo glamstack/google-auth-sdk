@@ -17,7 +17,7 @@ class AuthClient
     private string $auth_grant_type = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
     private string $encrypt_method = 'sha256';
 
-    private string $instance_key;
+    private string $connection_key;
     private string $private_key;
     private string $client_email;
     private string $jwt;
@@ -32,7 +32,7 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account
      *
-     * @param string $instance_key (Optional) The instance key to use from the
+     * @param string $connection_key (Optional) The connection key to use from the
      * configuration file to set the appropriate Google Auth Settings.
      * Default: `workspace`
      *
@@ -45,13 +45,13 @@ class AuthClient
      * `storage/keys/glamstack-google-auth/` directory of your application
      */
     public function __construct(
-        string $instance_key = null,
+        string $connection_key = null,
         array $api_scopes = [],
         string $file_path = null
     )
     {
-        // Set the class instance_key variable.
-        $this->setInstanceKey($instance_key);
+        // Set the class connection_key variable.
+        $this->setConnectionKey($connection_key);
 
         // Set the class api_scopes variable.
         $this->setApiScopes($api_scopes);
@@ -82,32 +82,32 @@ class AuthClient
     }
 
     /**
-     * Set the instance_key class variable. The instance_key variable by default
+     * Set the connection_key class variable. The connection_key variable by default
      * will be set to `workspace`. This can be overridden when initializing the
-     * SDK with a different instance key which is passed into this function to
+     * SDK with a different connection key which is passed into this function to
      * set the class variable to the provided key.
      *
-     * @param string $instance_key (Optional) The instance key to use from the
+     * @param string $connection_key (Optional) The connection key to use from the
      * configuration file.
      *
      * @return void
      */
-    protected function setInstanceKey(?string $instance_key) : void
+    protected function setConnectionKey(?string $connection_key) : void
     {
-        if($instance_key == null){
+        if($connection_key == null){
             /** @phpstan-ignore-next-line */
-            $this->instance_key = config(
-                'glamstack-google-auth.instance'
+            $this->connection_key = config(
+                'glamstack-google-auth.default_connection'
             );
         } else {
-            $this->instance_key = $instance_key;
+            $this->connection_key = $connection_key;
         }
     }
 
 
     /**
      * Set the API scopes for the Google Authentication API token. The scope
-     * will default to the configuration file for the instance, and can be
+     * will default to the configuration file for the connection, and can be
      * overridden with the $api_scopes variable being set during initialization.
      *
      * @param ?array $api_scopes (Optional) API Scopes to be set. This will
@@ -119,7 +119,7 @@ class AuthClient
     {
         if(!$api_scopes){
             $this->api_scopes = collect(
-                config('glamstack-google-auth.' . $this->instance_key . '.api_scopes')
+                config('glamstack-google-auth.' . $this->connection_key . '.api_scopes')
             )->implode(' ');
         }
         else{
@@ -128,7 +128,7 @@ class AuthClient
     }
 
     /**
-     * Set the class variable $file_path to either the provided $instance_key
+     * Set the class variable $file_path to either the provided $connection_key
      * configuration or the $file_path provided from class initialization.
      *
      * @param ?string $file_path The file path to set for the Google JSON token
@@ -138,7 +138,7 @@ class AuthClient
     protected function setFilePath(?string $file_path){
         if($file_path == null){
             $this->file_path = storage_path(
-                'keys/glamstack-google-auth/'. $this->instance_key . '.json'
+                'keys/glamstack-google-auth/'. $this->connection_key . '.json'
             );
         } else {
             $this->file_path = $file_path;
@@ -183,10 +183,10 @@ class AuthClient
      */
     protected function setSubjectEmail() : void
     {
-        if(config('glamstack-google-auth.' . $this->instance_key . '.email') != null){
+        if(config('glamstack-google-auth.' . $this->connection_key . '.email') != null){
             /** @phpstan-ignore-next-line */
             $this->subject_email = config(
-                'glamstack-google-auth.' . $this->instance_key . '.email'
+                'glamstack-google-auth.' . $this->connection_key . '.email'
             );
         }
         else{
