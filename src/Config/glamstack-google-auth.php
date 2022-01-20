@@ -42,7 +42,7 @@ return [
      * allows for API's that require [Domain-Wide Delegation of Authority](https://developers.google.com/admin-sdk/directory/v1/guides/delegation).
      *
      * The top level of the configuration i.e `workspace` will be the
-     * instance_key when initializing the SDK and will be used to determine
+     * connection_key when initializing the SDK and will be used to determine
      * the filepath of the JSON token as well.
      *
      * Ex.
@@ -52,17 +52,17 @@ return [
      * Will search for the Google JSON file under
      * `storage/keys/google-auth-sdk/workspace.json`
      *
-     * By default the SDK will use configuration for the instance_key 
+     * By default the SDK will use configuration for the connection_key 
      * `workspace`, unless you override this in your `.env` file using 
-     * the `GOOGLE_AUTH_INSTANCE` variable, or pass the instance key 
-     * as an argument when using the `ApiClient`.
+     * the `GOOGLE_AUTH_DEFAULT_CONNECTION` variable, or pass the connection
+     * key as an argument when using the `ApiClient`.
      * 
      * The list of OAUTH scopes for Google APIs can be found in the docs. 
      * See the `README.md` for more instructions and security practices 
      * for using scopes with your service account JSON keys.
      * https://developers.google.com/identity/protocols/oauth2/scopes
      */
-    'instance' => env('GOOGLE_AUTH_INSTANCE', 'workspace'),
+    'default_connection' => env('GOOGLE_AUTH_DEFAULT_CONNECTION', 'workspace'),
     'workspace' => [
         'api_scopes' => [
             'https://www.googleapis.com/auth/admin.directory.user',
