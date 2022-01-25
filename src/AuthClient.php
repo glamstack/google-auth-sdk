@@ -207,7 +207,9 @@ class AuthClient
      */
     protected function setSubjectEmail() : void
     {
-        if(config($this->config_path . $this->connection_key . '.email') != null){
+        if(config(
+            $this->config_path . 'connections.' .
+            $this->connection_key . '.email') != null){
             /** @phpstan-ignore-next-line */
             $this->subject_email = config(
                 $this->config_path . 'connections.' .
