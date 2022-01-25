@@ -72,9 +72,9 @@ composer require glamstack/google-auth-sdk
 ### Validation and Config Copy
 
 ```bash
-php artisan vendor:publish --tag=glamstack-google-auth
+php artisan vendor:publish --tag=glamstack-google-config
 
-# Copied File [/Users/jmartin/Sites/gitlab-sdk/src/Config/glamstack-google-auth.php] To [/config/glamstack-google-auth.php]
+# Copied File [/Users/jmartin/Sites/gitlab-sdk/src/Config/glamstack-google-config.php] To [/config/glamstack-google-config.php]
 # Publishing complete.
 ```
 
