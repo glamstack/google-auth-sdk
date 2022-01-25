@@ -16,6 +16,7 @@ class AuthClient
     private string $auth_type = 'JWT';
     private string $auth_grant_type = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
     private string $encrypt_method = 'sha256';
+    private string $config_path = 'glamstack-google-config.';
 
     private string $connection_key;
     private string $private_key;
@@ -97,13 +98,12 @@ class AuthClient
         if($connection_key == null){
             /** @phpstan-ignore-next-line */
             $this->connection_key = config(
-                'glamstack-google-auth.default_connection'
+                $this->config_path . 'default_connection'
             );
         } else {
             $this->connection_key = $connection_key;
         }
     }
-
 
     /**
      * Set the API scopes for the Google Authentication API token. The scope
@@ -119,7 +119,10 @@ class AuthClient
     {
         if(!$api_scopes){
             $this->api_scopes = collect(
-                config('glamstack-google-auth.' . $this->connection_key . '.api_scopes')
+                config(
+                    $this->config_path . 'connections.' .
+                    $this->connection_key . '.api_scopes'
+                    )
             )->implode(' ');
         }
         else{
@@ -183,10 +186,11 @@ class AuthClient
      */
     protected function setSubjectEmail() : void
     {
-        if(config('glamstack-google-auth.' . $this->connection_key . '.email') != null){
+        if(config($this->config_path . $this->connection_key . '.email') != null){
             /** @phpstan-ignore-next-line */
             $this->subject_email = config(
-                'glamstack-google-auth.' . $this->connection_key . '.email'
+                $this->config_path . 'connections.' .
+                $this->connection_key . '.email'
             );
         }
         else{
