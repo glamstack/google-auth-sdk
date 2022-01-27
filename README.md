@@ -163,7 +163,7 @@ The configuration for all Google related SDK's will be set inside of this config
             'https://www.googleapis.com/auth/admin.directory.user',
         ],
         'customer_id' => env('GOOGLE_WORKSPACE_CUSTOMERID'),
-        'domain' => env('GOOGLE_WORKSPACE_CUSTOMERID'),
+        'domain' => env('GOOGLE_WORKSPACE_CUSTOMER_ID'),
         'email' => env('GOOGLE_AUTH_WORKSPACE_EMAIL'),
         'log_channels' => ['single']
     ],

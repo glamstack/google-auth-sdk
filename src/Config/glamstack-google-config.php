@@ -120,7 +120,7 @@ return [
             'api_scopes' => [
                 'https://www.googleapis.com/auth/admin.directory.user',
             ],
-            'customer_id' => env('GOOGLE_WORKSPACE_CUSTOMERID'),
+            'customer_id' => env('GOOGLE_WORKSPACE_CUSTOMER_ID'),
             'domain' => env('GOOGLE_WORKSPACE_DOMAIN'),
             'email' => env('GOOGLE_AUTH_WORKSPACE_EMAIL'),
             'log_channels' => ['single']
