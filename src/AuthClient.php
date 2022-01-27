@@ -17,14 +17,14 @@ class AuthClient
     const AUTH_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
     const ENCRYPT_METHOD = 'sha256';
 
-    private string $connection_key;
-    private string $private_key;
-    private string $client_email;
-    private string $jwt;
-    private string $api_scopes;
     private string $access_token;
+    private string $api_scopes;
+    private string $client_email;
     private array $connection_config;
+    private string $connection_key;
     private string $file_path;
+    private string $jwt;
+    private string $private_key;
     private string $subject_email;
 
     /**
