@@ -128,7 +128,7 @@ class AuthClient
      */
     protected function verifyConnectionKeyExists(): void
     {
-        if (array_key_exists($this->connection_key, config('glamstack-google-config.connections'))) {
+        if (!array_key_exists($this->connection_key, config('glamstack-google-config.connections'))) {
             // FIXME: Add logging
             dd('The connection_key ' . $this->connection_key . ' is not ' .
             'configured in the glamstack-google-config.php file.');
