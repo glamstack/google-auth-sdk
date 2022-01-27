@@ -33,8 +33,8 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account
      *
-     * @param string $connection_key (Optional) The connection key to use from the
-     * configuration file to set the appropriate Google Auth Settings.
+     * @param string $connection_key (Optional) The connection key to use from
+     * the configuration file to set the appropriate Google Auth Settings.
      * Default: `workspace`
      *
      * @param array $api_scopes (Optional) The Google API Scopes that will be
@@ -49,8 +49,7 @@ class AuthClient
         string $connection_key = null,
         array $api_scopes = [],
         string $file_path = null
-    )
-    {
+    ) {
         // Set the class connection_key variable.
         $this->setConnectionKey($connection_key);
 
@@ -164,8 +163,9 @@ class AuthClient
      *
      * @return void
      */
-    protected function setFilePath(?string $file_path){
-        if($file_path == null){
+    protected function setFilePath(?string $file_path)
+    {
+        if ($file_path == null) {
             $this->file_path = storage_path(
                 'keys/glamstack-google-auth/'. $this->connection_key . '.json'
             );
@@ -341,7 +341,8 @@ class AuthClient
      *
      * @return string
      */
-    public function authenticate(){
+    public function authenticate()
+    {
         $this->access_token = $this->sendAuthRequest()->access_token;
         return $this->access_token;
     }
