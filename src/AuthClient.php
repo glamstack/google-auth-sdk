@@ -24,6 +24,7 @@ class AuthClient
     private string $jwt;
     private string $api_scopes;
     private string $access_token;
+    private array $connection_config;
     private string $file_path;
     private string $subject_email;
 
@@ -57,6 +58,9 @@ class AuthClient
         // Verify that the glamstack-google-config.php file contains the
         // provided connection key under the `connections` array.
         $this->verifyConnectionKeyExists();
+
+        // Set the class connection_configuration variable
+        $this->setConnectionConfig();
 
         // Set the class api_scopes variable.
         $this->setApiScopes($api_scopes);
@@ -99,27 +103,34 @@ class AuthClient
      */
     protected function setConnectionKey(?string $connection_key) : void
     {
-        if($connection_key == null){
+        if ($connection_key == null) {
             /** @phpstan-ignore-next-line */
-            $this->connection_key = config(
-                $this->config_path . 'default_connection'
-            );
+            $this->connection_key = config('glamstack-google-config.default_connection');
         } else {
             $this->connection_key = $connection_key;
         }
     }
 
     /**
-     * Verify that the `connection_key` exists in the 
+     * Define an array in the class using the connection configuration in the
      * glamstack-google-config.php connections array.
      *
      * @return void
      */
-    protected function verifyConnectionKeyExists(): void{
-        $connection_array = config(
-            $this->config_path . 'connections.' . $this->connection_key
-        );
-        if(!$connection_array){
+    protected function setConnectionConfig(): void
+    {
+        $this->connection_config = config('glamstack-google-config.connections.' . $this->connection_key);
+    }
+
+    /**
+     * Verify that the `connection_key` exists in the
+     * glamstack-google-config.php connections array.
+     *
+     * @return void
+     */
+    protected function verifyConnectionKeyExists(): void
+    {
+        if (array_key_exists($this->connection_key, config('glamstack-google-config.connections'))) {
             // FIXME: Add logging
             dd('The connection_key ' . $this->connection_key . ' is not ' .
             'configured in the glamstack-google-config.php file.');
@@ -138,15 +149,10 @@ class AuthClient
      */
     protected function setApiScopes(?array $api_scopes) : void
     {
-        if(!$api_scopes){
-            $this->api_scopes = collect(
-                config(
-                    $this->config_path . 'connections.' .
-                    $this->connection_key . '.api_scopes'
-                    )
-            )->implode(' ');
-        }
-        else{
+        if (!$api_scopes) {
+            $this->api_scopes = collect($this->connection_config['api_scopes'])
+                ->implode(' ');
+        } else {
             $this->api_scopes = collect($api_scopes)->implode(' ');
         }
     }
@@ -207,16 +213,10 @@ class AuthClient
      */
     protected function setSubjectEmail() : void
     {
-        if(config(
-            $this->config_path . 'connections.' .
-            $this->connection_key . '.email') != null){
+        if ($this->connection_config['email'] != null) {
             /** @phpstan-ignore-next-line */
-            $this->subject_email = config(
-                $this->config_path . 'connections.' .
-                $this->connection_key . '.email'
-            );
-        }
-        else{
+            $this->subject_email = $this->connection_config['email'];
+        } else {
             $this->subject_email = $this->client_email;
         }
     }
