@@ -64,15 +64,16 @@ return [
      */
     'default_connection' => env('GOOGLE_AUTH_DEFAULT_CONNECTION', 'workspace'),
     'connections' => [
+
         /**
          * Google Workspace
          * Configuration for all Google Workspace related API request should be
          * set here. 
          *
-         * The following are the required parameters for Workspace APIs:
+         * The following are the required array keys (parameters) for Workspace APIs:
          * 
          * @param string $subject_email The email address that will be used to 
-         * impersonate within Google workspace
+         * impersonate within Google workspace for domain delegation.
          *
          * @param string $domain The Google Domain the Google Workspace APIs 
          * will be used on
@@ -80,8 +81,9 @@ return [
          * @param string $customer_id The Google Customer ID to use with the 
          * API calls.
          *
-         * @param array $api_scopes The API scopes that will be needed for the
-         * workspace APIs that will be called.
+         * @param array $api_scopes The API scopes that are configured with the 
+         * JSON API key that satisfy the Authorization Scopes of the workspace 
+         * API endpoints that will be called.
          * Example Scopes:
          * ```php
          * [
@@ -98,11 +100,11 @@ return [
          * ]
          * ```
          *
-         * @param array $log_channels The Google Workspace log channels to send
-         * all related info and error logs to. If you leave this at the value
-         * of `['single']`, all API call logs will be sent to the default log
-         * file for Laravel that you have configured in config/logging.php
-         * which is usually storage/logs/laravel.log.
+         * @param array $log_channels The log channels to send all related info 
+         * and error logs to for Google Workspace API calls. If you leave this 
+         * at the value of `['single']`, all API call logs will be sent to the 
+         * default log file for Laravel that you have configured in 
+         * `config/logging.php` which is usually `storage/logs/laravel.log`.
          *
          * If you would like to see Google API logs in a separate log file that
          * is easier to triage without unrelated log messages, you can create a
@@ -116,6 +118,7 @@ return [
          *
          * https://laravel.com/docs/8.x/logging
          */
+
          'workspace' => [
             'api_scopes' => [
                 'https://www.googleapis.com/auth/admin.directory.user',
