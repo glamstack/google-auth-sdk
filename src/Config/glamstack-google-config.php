@@ -7,27 +7,32 @@ return [
      * Google Auth Configuration
      * ------------------------------------------------------------------------
      *
+     * @param string $default_connection The connection key (array key) of the 
+     *.     connection that you want to use if not specified when instantiating 
+     *.     the AuthClient.
+     * 
      * @param array $log_channels The Google Workspace log channels to send
-     * all related info and error logs to. If you leave this at the value
-     * of `['single']`, all API call logs will be sent to the default log
-     * file for Laravel that you have configured in config/logging.php
-     * which is usually storage/logs/laravel.log.
+     *      all related info and error logs to. If you leave this at the value
+     *      of `['single']`, all API call logs will be sent to the default log
+     *      file for Laravel that you have configured in config/logging.php
+     *      which is usually storage/logs/laravel.log.
      *
-     * If you would like to see Google API logs in a separate log file that
-     * is easier to triage without unrelated log messages, you can create a
-     * custom log channel and add the channel name to the array. For example,
-     * we recommend creating a custom channel (ex. `glamstack-google-auth`),
-     * however you can choose any name you would like.
-     * Ex. ['single', 'glamstack-google-example']
+     *      If you would like to see Google API logs in a separate log file
+     *      that is easier to triage without unrelated log messages, you can
+     *      create a custom log channel and add the channel name to the
+     *      array. For example, we recommend creating a custom channel
+     *      (ex. `glamstack-google-workspace`), however you can choose any
+     *      name you would like.
+     *      Ex. ['single', 'glamstack-google-example']
      *
-     * You can also add additional channels that logs should be sent to.
-     * Ex. ['single', 'glamstack-google-auth', 'slack']
+     *      You can also add additional channels that logs should be sent to.
+     *      Ex. ['single', 'glamstack-google-example', 'slack']
      *
-     * https://laravel.com/docs/8.x/logging
-     *
+     *      @see https://laravel.com/docs/8.x/logging
      */
 
     'auth' => [
+        'default_connection' => env('GOOGLE_AUTH_DEFAULT_CONNECTION', 'workspace'),
         'log_channels' => ['single'],
     ],
 
@@ -35,11 +40,12 @@ return [
      * ------------------------------------------------------------------------
      * Connections Configuration
      * ------------------------------------------------------------------------
-     * To allow for least privilege access and multiple tokens, the SDK uses
+     *
+     * To allow for least privilege access and multiple API keys, the SDK uses
      * this configuration section for configuring each of the API keys that
-     * you use by configuring the different API Scopes for each token, as well
-     * as any other optional configurations that are needed for any specific
-     * Google API endpoints.
+     * you use and configuring the different API Scopes for each token, as well
+     * as any other optional variables that are needed for any specific Google 
+     * API endpoints.
      *
      * Each connection has an array key that we refer to as the "connection key"
      * that contains a array of configuration values and is used when the SDK
@@ -77,10 +83,10 @@ return [
      * The list of OAUTH scopes for Google APIs can be found in the docs.
      * See the `README.md` for more instructions and security practices
      * for using scopes with your service account JSON keys.
-     * https://developers.google.com/identity/protocols/oauth2/scopes
+     * 
+     * @see https://developers.google.com/identity/protocols/oauth2/scopes
      */
 
-    'default_connection' => env('GOOGLE_AUTH_DEFAULT_CONNECTION', 'workspace'),
     'connections' => [
 
         /**

@@ -103,7 +103,7 @@ class AuthClient
     {
         if ($connection_key == null) {
             /** @phpstan-ignore-next-line */
-            $this->connection_key = config('glamstack-google-config.default_connection');
+            $this->connection_key = config('glamstack-google-config.auth.default_connection');
         } else {
             $this->connection_key = $connection_key;
         }
