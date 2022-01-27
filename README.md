@@ -31,15 +31,18 @@ This SDK supports a global default connection that is defined in your `.env` fil
 
 ```php
 // Initialize the SDK using the default connection
-$google_auth = new \Glamstack\GoogleAuth\AuthClient();
+$google_auth = new \Glamstack\GoogleAuth\AuthClient('workspace');
 
-// Or you can initialize the SDK using a specific connection in `config/glamstack-google-auth.php`
-// $google_auth = new \Glamstack\GoogleAuth\AuthClient('my_connection_key');
+// You can also initialize the SDK using the default connection that you have
+// configured in `config/glamstack-gitlab-config.php` or your .env file.
+// $google_auth = new \Glamstack\GoogleAuth\AuthClient();
 
-// Send Auth Request
+// Send Auth Request to get JWT token
 $api_token = $google_auth->authenticate();
 
-// Perform API Request
+// Perform API Request using short-lived JWT token
+// https://developers.google.com/admin-sdk/directory/reference/rest/v1/users/get
+$user_key = 'klibby@example.com';
 $response = Http::withToken($api_token)
     ->get('https://admin.googleapis.com/admin/directory/v1/users/' . $user_key);
 
@@ -56,13 +59,13 @@ The examples above show basic inline usage that is suitable for most use cases. 
 
 use Glamstack\GoogleAuth\AuthClient;
 
-class GoogleService
+class GoogleWorkspaceUserService
 {
     protected $auth_token;
 
     public function __construct()
     {
-        $google_auth = new \Glamstack\GoogleAuth\AuthClient()
+        $google_auth = new \Glamstack\GoogleAuth\AuthClient('workspace')
         $this->auth_token = $google_auth->authenticate();
     }
 
@@ -93,133 +96,18 @@ composer require glamstack/google-auth-sdk
 
 > If you are contributing to this package, see [CONTRIBUTING](CONTRIBUTING.md) for instructions on configuring a local composer package with symlinks.
 
-### Environment Configuration
+#### Related SDK Packages
 
-#### Connection Keys
+This SDK provides authentication to be able to use the generic [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) with any endpoint that found in the [Google API Explorer](https://developers.google.com/apis-explorer).
 
-We use the concept of "connection keys" that refer to a configuration array of pre-configured scopes, subject email, and JSON API key file name that allow you to connect to different Google services, or use different least privilege security configurations.
+We have created additional packages that provide defined methods for common service endpoints that we use within GitLab IT that you can use instead.
 
-You can configure update the configuration of the default placeholder connections or add your own custom connections in `config/glamstack-google-config.php`.
+* [google-workspace-sdk](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-workspace-sdk)
+* [google-cloud-sdk](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-cloud-sdk)
 
-The configuration for all Google related SDK's will be set inside of this configuration file.
+## Environment Configuration
 
-```php
-'default_connection' => env('GOOGLE_AUTH_DEFAULT_CONNECTION', 'workspace'),
-'connections' => [
-    /**
-     * Google Workspace
-     * Configuration for all Google Workspace related API request should be
-     * set here. 
-     *
-     * The following are the required parameters for Workspace APIs:
-     * 
-     * @param string $subject_email The email address that will be used to 
-     * impersonate within Google workspace
-     *
-     * @param string $domain The Google Domain the Google Workspace APIs 
-     * will be used on
-     *
-     * @param string $customer_id The Google Customer ID to use with the 
-     * API calls.
-     *
-     * @param array $api_scopes The API scopes that will be needed for the
-     * workspace APIs that will be called.
-     * Example Scopes:
-     * ```php
-     * [
-     *     'https://www.googleapis.com/auth/admin.directory.user',
-     *     'https://www.googleapis.com/auth/admin.directory.group',
-     *     'https://www.googleapis.com/auth/admin.directory.group.member',
-     *     'https://www.googleapis.com/auth/admin.directory.orgunit',
-     *     'https://www.googleapis.com/auth/drive',
-     *     'https://www.googleapis.com/auth/spreadsheets',
-     *     'https://www.googleapis.com/auth/presentations',
-     *     'https://www.googleapis.com/auth/apps.groups.settings',
-     *     'https://www.googleapis.com/auth/admin.reports.audit.readonly',
-     *     'https://www.googleapis.com/auth/admin.reports.usage.readonly'
-     * ]
-     * ```
-     *
-     * @param array $log_channels The Google Workspace log channels to send
-     * all related info and error logs to. If you leave this at the value
-     * of `['single']`, all API call logs will be sent to the default log
-     * file for Laravel that you have configured in config/logging.php
-     * which is usually storage/logs/laravel.log.
-     *
-     * If you would like to see Google API logs in a separate log file that
-     * is easier to triage without unrelated log messages, you can create a
-     * custom log channel and add the channel name to the array. For example,
-     * we recommend creating a custom channel (ex. `glamstack-google-workspace`),
-     * however you can choose any name you would like.
-     * Ex. ['single', 'glamstack-google-example']
-     *
-     * You can also add additional channels that logs should be sent to.
-     * Ex. ['single', 'glamstack-google-example', 'slack']
-     *
-     * https://laravel.com/docs/8.x/logging
-     */
-     'workspace' => [
-        'api_scopes' => [
-            'https://www.googleapis.com/auth/admin.directory.user',
-        ],
-        'customer_id' => env('GOOGLE_WORKSPACE_CUSTOMERID'),
-        'domain' => env('GOOGLE_WORKSPACE_CUSTOMER_ID'),
-        'email' => env('GOOGLE_AUTH_WORKSPACE_EMAIL'),
-        'log_channels' => ['single']
-    ],
-
-    /**
-     * Google Cloud Project
-     * TODO: Documentaiton needs to be updated for Cloud APIs when building
-     * out the SDK for GCP.
-     */
-    'gcp_project_1' => [
-        'api_scopes' => [
-            'https://www.googleapis.com/auth/cloud-platform',
-            //'https://www.googleapis.com/auth/compute',
-            //'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            //'https://www.googleapis.com/auth/cloud-billing',
-            //'https://www.googleapis.com/auth/monitoring.read',
-        ],
-    ]
-]
-```
-
-##### API Scopes
-
-Each connection key array has `api_scopes` that provide a list of [Google API scopes](https://developers.google.com/identity/protocols/oauth2/scopes) that your JSON API token has access to. The default configuration includes common scopes that are commented out and can simply be uncommented to use them. You can add additional API scopes to the respective array as needed.
-
-If you're just getting started with using the SDK, you should not need to make many changes to this file except for commenting or uncommenting the scopes that you've granted to your JSON API token.
-
-You can learn more about the Authorization Scopes required by referencing the [Google API Explorer](https://developers.google.com/apis-explorer) documentation for the specific REST endpoint.
-
-##### Subject Email
-
-> This variable is only used by Google Workspace API and other services that use [Domain-Wide Delegation](https://developers.google.com/admin-sdk/directory/v1/guides/delegation). If you are only using the SDK for Google Cloud API services, you do not need to add this variable to your `.env` file.
-
-By default the `client_email` field will be used as the 'Subject Email'. However, if you are utilizing this SDK to authenticate with any Google Endpoints that require [Domain-Wide Delegation](https://developers.google.com/admin-sdk/directory/v1/guides/delegation) then you will have to add the following variable to your `.env` file.
-
-This email address is that of a user account in Google Workspace that contains the appropriate Administrative rights for the APIs that will be utilized. When developing or testing applications, this can be the email address of the developer or test account.
-
-##### Domain
-
-The Google Domain is utilized with Google Workspace API Request. This is what is used to tell Google which domain the API should be used on. To set the `domain` set the `GOOGLE_WORKSPACE_DOMAIN` variable in the applications `.env` file.
-
-##### Customer ID
-
-The Google Customer ID is required to run Google Workspace API request. To set the `customer_id` set the `GOOGLE_WORKSPACE_CUSTOMERID` variable in the applications `.env` file.
-
-```bash
-GOOGLE_AUTH_WORKSPACE_EMAIL="dmurphy@example.com"
-```
-
-When running in production, this should be the email address of a bot service account that you have created as a Google Workspace user that has permissions scoped to the automation that your application provides.
-
-```bash
-GOOGLE_AUTH_WORKSPACE_EMAIL="my-production-app-service-account@example.com"
-```
-
-#### JSON API Key Storage
+### JSON API Key Storage
 
 By default the SDK will load the Google Service Account JSON File from the `storage/keys/glamstack-google-auth/{connection_key}.json`. With the default connection key of `workspace`, this will be `workspace.json`.
 
@@ -233,21 +121,59 @@ By default the SDK will load the Google Service Account JSON File from the `stor
 
 5. Repeat steps 3 and 4 for each of the other connection keys that you have configured in `config/glamstack-google-auth.php`.
 
-#### Default Global Connection
+### Connection Keys
 
-Add the `GOOGLE_AUTH_DEFAULT_CONNECTION` variable to your `.env` file.
+We use the concept of **_connection keys_** that refer to a configuration array of variables that are configured in conjunction with each of the JSON API keys that you use to connect to the Google API.
 
-```bash
-GOOGLE_AUTH_DEFAULT_CONNECTION="workspace"
+You can configure your connections in `config/glamstack-google-config.php`. The configuration for all Google related SDK's will be set inside of this configuration file.
+
+See the documentation in the config file to learn more about configuration parameters for each of the common services (ex. Google Workspace, Google Cloud Platform, etc).
+
+```php
+'connections' => [
+
+    'workspace' => [
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/admin.directory.user',
+            'https://www.googleapis.com/auth/admin.directory.group',
+            'https://www.googleapis.com/auth/admin.directory.group.member',
+            'https://www.googleapis.com/auth/admin.directory.orgunit',
+        ],
+        'customer_id' => env('GOOGLE_WORKSPACE_CUSTOMER_ID'),
+        'domain' => env('GOOGLE_WORKSPACE_DOMAIN'),
+        'email' => env('GOOGLE_AUTH_WORKSPACE_EMAIL'),
+        'log_channels' => ['single']
+    ],
+
+    'gcp_project_1' => [
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/cloud-platform',
+        ],
+        'log_channels' => ['single']
+    ]
+
+]
 ```
 
-By default, the SDK will use the `workspace` connection key for all API calls across your application unless you change the default connection to a different _connection key_ defined in the `config/glamstack-google-config.php` file.
+#### API Scopes
+
+Each connection key array has `api_scopes` that provide a list of [Google API scopes](https://developers.google.com/identity/protocols/oauth2/scopes) that your JSON API key has access to. See the documentation in the `config/glamstack-google-config.php` file for examples of common scopes that you can copy and paste to your connections depending on what has been configured for your JSON API key. The default configuration includes common scopes that are commented out and can simply be uncommented to use them. You can add additional API scopes to the respective array as needed.
+
+If you're just getting started with using the SDK, you should not need to make many changes to this file except for commenting or uncommenting the scopes that you've granted to your JSON API key.
+
+You can learn more about the Authorization Scopes required by referencing the [Google API Explorer](https://developers.google.com/apis-explorer) documentation for the specific REST endpoint.
+
+#### Default Global Connection
+
+By default, the SDK will use the `workspace` connection key for all API calls across your application unless you change the default connection to a different **_connection key_** defined in the `config/glamstack-google-config.php` file.
+
+You can optionally add the `GOOGLE_AUTH_DEFAULT_CONNECTION` variable to your `.env` file and set the value to the **_connection key_** that you want to use as the default.
 
 ```bash
 GOOGLE_AUTH_DEFAULT_CONNECTION="my_connection_key"
 ```
 
-To use the default connection, you do **not** need to provide the _connection key_ to the `AuthClient`.
+To use the default connection, you do **_not_** need to provide the **_connection key_** to the `AuthClient`.
 
 ```php
 // Initialize the SDK
@@ -259,7 +185,7 @@ $api_token = $google_auth->authenticate();
 
 #### Using Pre-Configured Connections
 
-If you want to use a specific _connection key_ when using the `AuthClient` that is different from the `GOOGLE_AUTH_DEFAULT_CONNECTION` global variable, you can pass the _connection key_ that has been configured in `config/glamstack-google-config.php` as the first construct argument for the `AuthClient`.
+If you want to use a specific **_connection key_** when using the `AuthClient` that is different from the `GOOGLE_AUTH_DEFAULT_CONNECTION` global variable, you can pass the **_connection key_** that has been configured in `config/glamstack-google-config.php` as the first construct argument for the `AuthClient`.
 
 ```php
 // Initialize the SDK
@@ -273,7 +199,7 @@ $api_token = $google_auth->authenticate();
 
 #### Custom Non-Configured Connections
 
-If you want to connect to a Google API service that you have not pre-configured in `config/glamstack-google-auth.php`, you will need to provide an array of scopes and the path to the JSON key to use when initializing the `AuthClient`.
+If you want to connect to a Google API service that you have not pre-configured in `config/glamstack-google-config.php`, you will need to provide an array of scopes and the path to the JSON key to use when initializing the `AuthClient`.
 
 ```
 // Define scopes array for custom connection
@@ -288,26 +214,91 @@ $json_file_path = storage_path('storage/keys/glamstack-google-auth/my_custom_key
 
 // Not Officially Supported. Use at your own risk.
 // If your JSON key is stored in the file system outside of the Laravel application,
-// you can use the full path to the file. You may need to adjust permissions based 
+// you can use the full path to the file. You may need to adjust permissions based
 // on the system user or service that your Laravel application runs with.
 // $json_file_path = '/etc/gcloud-keys/my_custom_key.json';
 
-// Initialize Google Auth Client 
+// Initialize Google Auth Client
 $google_auth = new \Glamstack\GoogleAuth\AuthClient(null, $scopes, $json_file_path);
 
 // Send Auth Request
 $api_token = $google_auth->authenticate();
 ```
 
-### Custom Logging Configuration
+## Google Workspace API Connections
 
-By default, we use the `single` channel for all logs that is configured in your application's `config/logging.php` file. This sends all Google Auth log messages to the `storage/logs/laravel.log` file.
+#### Subject Email
 
-If you would like to see Google Auth logs in a separate log file that is easier to triage without unrelated log messages, you can create a custom log channel.  For example, we recommend using the value of `glamstack-google-auth`, however you can choose any name you would like.
+> This variable is only used by Google Workspace API and other services that use [Domain-Wide Delegation](https://developers.google.com/admin-sdk/directory/v1/guides/delegation). If you are only using the SDK for Google Cloud API services, you do not need to add this variable to your `.env` file.
+
+By default the `client_email` field will be used as the 'Subject Email'. However, if you are utilizing this SDK to authenticate with any Google Endpoints that require [Domain-Wide Delegation](https://developers.google.com/admin-sdk/directory/v1/guides/delegation) then you will have to add the following variable to your `.env` file.
+
+This email address is that of a user account in Google Workspace that contains the appropriate Administrative rights for the APIs that will be utilized. When developing or testing applications, this can be the email address of the developer or test account.
+
+```bash
+GOOGLE_AUTH_WORKSPACE_EMAIL="dmurphy@example.com"
+```
+
+When running in production, this should be the email address of a bot service account that you have created as a Google Workspace user that has permissions scoped to the automation that your application provides.
+
+```bash
+GOOGLE_AUTH_WORKSPACE_EMAIL="my-production-app-service-account@example.com"
+```
+
+#### Domain
+
+The Google Domain is utilized with Google Workspace API Request. Add the following variable to your `.env` file to tell Google which domain the API should be used on.
+
+```bash
+GOOGLE_WORKSPACE_DOMAIN="example.com"
+```
+
+#### Customer ID
+
+The [Google Customer ID](https://support.google.com/a/answer/10070793?product_name=UnuFlow&hl=en&visit_id=637788489425453961-1161888327&rd=1&src=supportwidget0&hl=en) is required to run Google Workspace API request against your company's account. Add the following variable to your `.env` file.
+
+```bash
+GOOGLE_WORKSPACE_CUSTOMER_ID="C12345678"
+```
+
+## Google Cloud Platform API Connections
+
+TODO: This is a placeholder for documentation after we have implemented and tested the GCP API endpoints.
+
+## Logging Configuration
+
+By default, we use the `single` channel for all logs that is pre-configured in your application's `config/logging.php` file. This sends all Google Auth log messages to the `storage/logs/laravel.log` file.
+
+You can configure the log channels for this SDK in `config/glamstack-google-config.php`. You can configure the log channels for the AuthClient in `auth.log_channels`. You can also configure the log channels for each of your connections in `connections.{connection_key}.log_channels`.
+
+```php
+// config/glamstack-google-config.php
+
+   'auth' => [
+        'log_channels' => ['single'],
+    ],
+
+    'connections' => [
+        'workspace' => [
+            // ...
+            'log_channels' => ['single'],
+        ],
+        'gcp_project_1' => [
+            // ...
+            'log_channels' => ['single'],
+        ],
+    ]
+```
+
+### Creating a Log Channel
+
+If you would like to see Google Auth logs in a separate log file that is easier to triage without unrelated log messages, you can create a custom log channel. For example, you can have all `AuthClient` logs sent to a new log channel named `glamstack-google-auth` (or any name you would like).
 
 Add the custom log channel to `config/logging.php`.
 
 ```php
+// config/logging.php
+
     'channels' => [
 
         // Add anywhere in the `channels` array
@@ -324,6 +315,8 @@ Add the custom log channel to `config/logging.php`.
 Update the `channels.stack.channels` array to include the array key (ex.  `glamstack-google-auth`) of your custom channel. Be sure to add `glamstack-google-auth` to the existing array values and not replace the existing values.
 
 ```php
+# config/logging.php
+
     'channels' => [
         'stack' => [
             'driver' => 'stack',
@@ -333,19 +326,31 @@ Update the `channels.stack.channels` array to include the array key (ex.  `glams
     ],
 ```
 
+Finally, update the `config/glamstack-google-config.php` configuration.
+
+```php
+// config/glamstack-google-config.php
+
+   'auth' => [
+        'log_channels' => ['glamstack-google-auth'],
+    ],
+```
+
+You can repeat these configuration steps to customize any of your connection keys.
+
 ## Security Best Practices
 
-#### Google API Scopes
+### Google API Scopes
 
 The default configuration file loaded with the package shows an example of the API scope configuration. Be sure to follow the [Principle of Least Privilege](https://www.cisa.gov/uscert/bsi/articles/knowledge/principles/least-privilege). All of the Google Scopes can be found [here](https://developers.google.com/identity/protocols/oauth2/scopes).
 
 You can learn more about the Authorization Scopes required by referencing the [Google API Explorer](https://developers.google.com/apis-explorer) documentation for the specific REST endpoint.
 
-#### JSON Key Storage
+### JSON Key Storage
 
-Do not store your JSON token anywhere that is not included in the `.gitignore` file. This is to avoid committing your credentials to your repository (secret leak)
+Do not store your JSON key file anywhere that is not included in the `.gitignore` file. This is to avoid committing your credentials to your repository (secret leak)
 
-It is a recommended to store a copy of each access token in your preferred password manager (ex. 1Password, LastPass, etc.) and/or secrets vault (ex. HashiCorp Vault, Ansible, etc.).
+It is a recommended to store a copy of each JSON API key in your preferred password manager (ex. 1Password, LastPass, etc.) and/or secrets vault (ex. HashiCorp Vault, Ansible, etc.).
 
 ## Issue Tracking and Bug Reports
 
