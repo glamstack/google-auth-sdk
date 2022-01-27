@@ -56,7 +56,7 @@ class AuthClient
 
         // Verify that the glamstack-google-config.php file contains the
         // provided connection key under the `connections` array.
-        $this->verifyConfiguration();
+        $this->verifyConnectionKeyExists();
 
         // Set the class api_scopes variable.
         $this->setApiScopes($api_scopes);
@@ -115,7 +115,7 @@ class AuthClient
      *
      * @return void
      */
-    protected function verifyConfiguration(): void{
+    protected function verifyConnectionKeyExists(): void{
         $connection_array = config(
             $this->config_path . 'connections.' . $this->connection_key
         );
