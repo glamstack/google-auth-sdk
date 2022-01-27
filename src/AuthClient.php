@@ -11,19 +11,20 @@ class AuthClient
 {
     // Standard parameters for building JWT request with Google OAuth Server.
     // They are put here for easy changing if necessary
-    private string $auth_base_url = 'https://oauth2.googleapis.com/token';
-    private string $auth_algorithm = 'RS256';
-    private string $auth_type = 'JWT';
-    private string $auth_grant_type = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
-    private string $encrypt_method = 'sha256';
+    const AUTH_BASE_URL = 'https://oauth2.googleapis.com/token';
+    const AUTH_ALGORITHM = 'RS256';
+    const AUTH_TYPE = 'JWT';
+    const AUTH_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
+    const ENCRYPT_METHOD = 'sha256';
 
-    private string $connection_key;
-    private string $private_key;
-    private string $client_email;
-    private string $jwt;
-    private string $api_scopes;
     private string $access_token;
+    private string $api_scopes;
+    private string $client_email;
+    private array $connection_config;
+    private string $connection_key;
     private string $file_path;
+    private string $jwt;
+    private string $private_key;
     private string $subject_email;
 
     /**
@@ -32,8 +33,8 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account
      *
-     * @param string $connection_key (Optional) The connection key to use from the
-     * configuration file to set the appropriate Google Auth Settings.
+     * @param string $connection_key (Optional) The connection key to use from
+     * the configuration file to set the appropriate Google Auth Settings.
      * Default: `workspace`
      *
      * @param array $api_scopes (Optional) The Google API Scopes that will be
@@ -48,10 +49,16 @@ class AuthClient
         string $connection_key = null,
         array $api_scopes = [],
         string $file_path = null
-    )
-    {
+    ) {
         // Set the class connection_key variable.
         $this->setConnectionKey($connection_key);
+
+        // Verify that the glamstack-google-config.php file contains the
+        // provided connection key under the `connections` array.
+        $this->verifyConnectionKeyExists();
+
+        // Set the class connection_configuration variable
+        $this->setConnectionConfig();
 
         // Set the class api_scopes variable.
         $this->setApiScopes($api_scopes);
@@ -94,16 +101,39 @@ class AuthClient
      */
     protected function setConnectionKey(?string $connection_key) : void
     {
-        if($connection_key == null){
+        if ($connection_key == null) {
             /** @phpstan-ignore-next-line */
-            $this->connection_key = config(
-                'glamstack-google-auth.default_connection'
-            );
+            $this->connection_key = config('glamstack-google-config.auth.default_connection');
         } else {
             $this->connection_key = $connection_key;
         }
     }
 
+    /**
+     * Define an array in the class using the connection configuration in the
+     * glamstack-google-config.php connections array.
+     *
+     * @return void
+     */
+    protected function setConnectionConfig(): void
+    {
+        $this->connection_config = config('glamstack-google-config.connections.' . $this->connection_key);
+    }
+
+    /**
+     * Verify that the `connection_key` exists in the
+     * glamstack-google-config.php connections array.
+     *
+     * @return void
+     */
+    protected function verifyConnectionKeyExists(): void
+    {
+        if (!array_key_exists($this->connection_key, config('glamstack-google-config.connections'))) {
+            // FIXME: Add logging
+            dd('The connection_key ' . $this->connection_key . ' is not ' .
+            'configured in the glamstack-google-config.php file.');
+        }
+    }
 
     /**
      * Set the API scopes for the Google Authentication API token. The scope
@@ -117,12 +147,10 @@ class AuthClient
      */
     protected function setApiScopes(?array $api_scopes) : void
     {
-        if(!$api_scopes){
-            $this->api_scopes = collect(
-                config('glamstack-google-auth.' . $this->connection_key . '.api_scopes')
-            )->implode(' ');
-        }
-        else{
+        if (!$api_scopes) {
+            $this->api_scopes = collect($this->connection_config['api_scopes'])
+                ->implode(' ');
+        } else {
             $this->api_scopes = collect($api_scopes)->implode(' ');
         }
     }
@@ -135,8 +163,9 @@ class AuthClient
      *
      * @return void
      */
-    protected function setFilePath(?string $file_path){
-        if($file_path == null){
+    protected function setFilePath(?string $file_path)
+    {
+        if ($file_path == null) {
             $this->file_path = storage_path(
                 'keys/glamstack-google-auth/'. $this->connection_key . '.json'
             );
@@ -183,13 +212,10 @@ class AuthClient
      */
     protected function setSubjectEmail() : void
     {
-        if(config('glamstack-google-auth.' . $this->connection_key . '.email') != null){
+        if ($this->connection_config['email'] != null) {
             /** @phpstan-ignore-next-line */
-            $this->subject_email = config(
-                'glamstack-google-auth.' . $this->connection_key . '.email'
-            );
-        }
-        else{
+            $this->subject_email = $this->connection_config['email'];
+        } else {
             $this->subject_email = $this->client_email;
         }
     }
@@ -202,10 +228,11 @@ class AuthClient
      *
      * @return string
      */
-    protected function createJwtHeader(){
+    protected function createJwtHeader()
+    {
         $jwt_header = [
-            'alg' => $this->auth_algorithm,
-            'typ' => $this->auth_type,
+            'alg' => self::AUTH_ALGORITHM,
+            'typ' => self::AUTH_TYPE,
         ];
         $encoded_jwt_header = $this->base64_url_encode(
             (string) json_encode($jwt_header)
@@ -221,11 +248,12 @@ class AuthClient
      *
      * @return string
      */
-    protected function createJwtClaim(){
+    protected function createJwtClaim()
+    {
         $jwt_claim = [
             'iss' => $this->client_email,
             'scope' => $this->api_scopes,
-            'aud' => $this->auth_base_url,
+            'aud' => self::AUTH_BASE_URL,
             'exp' => time()+3600,
             'iat' => time(),
             'sub' => $this->subject_email
@@ -266,7 +294,7 @@ class AuthClient
             $this->private_key,
             /** @phpstan-ignore-next-line */
             $key_id,
-            $this->encrypt_method
+            self::ENCRYPT_METHOD
         );
 
         // Encode the private key
@@ -299,9 +327,9 @@ class AuthClient
     protected function sendAuthRequest() : object
     {
         $response = Http::asForm()->post(
-            $this->auth_base_url,
+            self::AUTH_BASE_URL,
             [
-                'grant_type' => $this->auth_grant_type,
+                'grant_type' => self::AUTH_GRANT_TYPE,
                 'assertion' => $this->jwt
             ]
         );
@@ -313,7 +341,8 @@ class AuthClient
      *
      * @return string
      */
-    public function authenticate(){
+    public function authenticate()
+    {
         $this->access_token = $this->sendAuthRequest()->access_token;
         return $this->access_token;
     }

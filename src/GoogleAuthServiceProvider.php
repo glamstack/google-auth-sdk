@@ -39,8 +39,8 @@ class GoogleAuthServiceProvider extends ServiceProvider
         // their own values in the application config file.
         //
         $this->mergeConfigFrom(
-            __DIR__.'/Config/glamstack-google-auth.php',
-            'glamstack-google-auth'
+            __DIR__.'/Config/glamstack-google-config.php',
+            'glamstack-google-config'
         );
 
         if (! $this->app->runningInConsole()) {
@@ -55,11 +55,11 @@ class GoogleAuthServiceProvider extends ServiceProvider
         //
         $this->publishes(
             [
-                __DIR__.'/Config/glamstack-google-auth.php' => config_path(
-                    'glamstack-google-auth.php'
+                __DIR__.'/Config/glamstack-google-config.php' => config_path(
+                    'glamstack-google-config.php'
                 ),
             ], 
-            'glamstack-google-auth');
+            'glamstack-google-config');
     }
 
     /**
