@@ -11,12 +11,11 @@ class AuthClient
 {
     // Standard parameters for building JWT request with Google OAuth Server.
     // They are put here for easy changing if necessary
-    private string $auth_base_url = 'https://oauth2.googleapis.com/token';
-    private string $auth_algorithm = 'RS256';
-    private string $auth_type = 'JWT';
-    private string $auth_grant_type = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
-    private string $encrypt_method = 'sha256';
-    private string $config_path = 'glamstack-google-config.';
+    const AUTH_BASE_URL = 'https://oauth2.googleapis.com/token';
+    const AUTH_ALGORITHM = 'RS256';
+    const AUTH_TYPE = 'JWT';
+    const AUTH_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
+    const ENCRYPT_METHOD = 'sha256';
 
     private string $connection_key;
     private string $private_key;
@@ -229,10 +228,11 @@ class AuthClient
      *
      * @return string
      */
-    protected function createJwtHeader(){
+    protected function createJwtHeader()
+    {
         $jwt_header = [
-            'alg' => $this->auth_algorithm,
-            'typ' => $this->auth_type,
+            'alg' => self::AUTH_ALGORITHM,
+            'typ' => self::AUTH_TYPE,
         ];
         $encoded_jwt_header = $this->base64_url_encode(
             (string) json_encode($jwt_header)
@@ -248,11 +248,12 @@ class AuthClient
      *
      * @return string
      */
-    protected function createJwtClaim(){
+    protected function createJwtClaim()
+    {
         $jwt_claim = [
             'iss' => $this->client_email,
             'scope' => $this->api_scopes,
-            'aud' => $this->auth_base_url,
+            'aud' => self::AUTH_BASE_URL,
             'exp' => time()+3600,
             'iat' => time(),
             'sub' => $this->subject_email
@@ -293,7 +294,7 @@ class AuthClient
             $this->private_key,
             /** @phpstan-ignore-next-line */
             $key_id,
-            $this->encrypt_method
+            self::ENCRYPT_METHOD
         );
 
         // Encode the private key
@@ -326,9 +327,9 @@ class AuthClient
     protected function sendAuthRequest() : object
     {
         $response = Http::asForm()->post(
-            $this->auth_base_url,
+            self::AUTH_BASE_URL,
             [
-                'grant_type' => $this->auth_grant_type,
+                'grant_type' => self::AUTH_GRANT_TYPE,
                 'assertion' => $this->jwt
             ]
         );
