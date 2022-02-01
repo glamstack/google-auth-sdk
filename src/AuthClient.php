@@ -2,6 +2,7 @@
 
 namespace Glamstack\GoogleAuth;
 
+use Glamstack\GoogleAuth\Traits\ResponseLog;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -9,6 +10,8 @@ use Illuminate\Support\Str;
 
 class AuthClient
 {
+    use ResponseLog;
+
     // Standard parameters for building JWT request with Google OAuth Server.
     // They are put here for easy changing if necessary
     const AUTH_BASE_URL = 'https://oauth2.googleapis.com/token';
@@ -326,14 +329,28 @@ class AuthClient
      */
     protected function sendAuthRequest() : object
     {
-        $response = Http::asForm()->post(
+        $request = Http::asForm()->post(
             self::AUTH_BASE_URL,
             [
                 'grant_type' => self::AUTH_GRANT_TYPE,
                 'assertion' => $this->jwt
             ]
         );
-        return $response->object();
+
+        $response = $this->parseApiResponse($request);
+
+        $this->logResponse('post', self::AUTH_BASE_URL, $response);
+
+        // If response was not successful, parse Google API response
+        if ($response->status->successful == false) {
+            if (property_exists($response->object, 'error')) {
+                abort($response->status->code, 'Google SDK Authentication Error. ' . $response->object->error_description);
+            } else {
+                abort(500, 'The Google SDK authentication attempt failed due to an unknown reason in the sendAuthRequest method.');
+            }
+        }
+
+        return $response;
     }
 
     /**
