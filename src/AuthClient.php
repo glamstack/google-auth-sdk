@@ -2,6 +2,7 @@
 
 namespace Glamstack\GoogleAuth;
 
+use Glamstack\GoogleAuth\Traits\ResponseLog;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -9,6 +10,8 @@ use Illuminate\Support\Str;
 
 class AuthClient
 {
+    use ResponseLog;
+
     // Standard parameters for building JWT request with Google OAuth Server.
     // They are put here for easy changing if necessary
     const AUTH_BASE_URL = 'https://oauth2.googleapis.com/token';
@@ -43,7 +46,7 @@ class AuthClient
      * @param string $file_path (Optional) The file path of the Google JSON key
      * used for Service Account authentication. This parameter should only be
      * used if you are storing your JSON key outside of the
-     * `storage/keys/glamstack-google-auth/` directory of your application
+     * `storage/keys/glamstack-google/` directory of your application
      */
     public function __construct(
         string $connection_key = null,
@@ -52,10 +55,6 @@ class AuthClient
     ) {
         // Set the class connection_key variable.
         $this->setConnectionKey($connection_key);
-
-        // Verify that the glamstack-google-config.php file contains the
-        // provided connection key under the `connections` array.
-        $this->verifyConnectionKeyExists();
 
         // Set the class connection_configuration variable
         $this->setConnectionConfig();
@@ -103,35 +102,40 @@ class AuthClient
     {
         if ($connection_key == null) {
             /** @phpstan-ignore-next-line */
-            $this->connection_key = config('glamstack-google-config.auth.default_connection');
+            $this->connection_key = config('glamstack-google.auth.default_connection');
         } else {
             $this->connection_key = $connection_key;
         }
     }
 
     /**
+     * Set the connection_config class property array
+     *
      * Define an array in the class using the connection configuration in the
-     * glamstack-google-config.php connections array.
+     * glamstack-google.php connections array. If connection key is not specified,
+     * an error log will be created and a 501 abort error will be thrown.
      *
      * @return void
      */
     protected function setConnectionConfig(): void
     {
-        $this->connection_config = config('glamstack-google-config.connections.' . $this->connection_key);
-    }
+        if (array_key_exists($this->connection_key, config('glamstack-google.connections'))) {
+            $this->connection_config = config('glamstack-google.connections.' . $this->connection_key);
+        } else {
+            $error_message = 'The Google connection key is not defined in ' .
+                '`config/glamstack-google.php` connections array. Without this ' .
+                'array config, there is no API configuration to connect with.';
 
-    /**
-     * Verify that the `connection_key` exists in the
-     * glamstack-google-config.php connections array.
-     *
-     * @return void
-     */
-    protected function verifyConnectionKeyExists(): void
-    {
-        if (!array_key_exists($this->connection_key, config('glamstack-google-config.connections'))) {
-            // FIXME: Add logging
-            dd('The connection_key ' . $this->connection_key . ' is not ' .
-            'configured in the glamstack-google-config.php file.');
+            Log::stack((array) config('glamstack-google.auth.log_channels'))
+                ->critical($error_message, [
+                    'event_type' => 'google-api-config-missing-error',
+                    'class' => get_class(),
+                    'status_code' => '501',
+                    'message' => $error_message,
+                    'connection_key' => $this->connection_key,
+                ]);
+
+            abort(501, $error_message);
         }
     }
 
@@ -153,6 +157,25 @@ class AuthClient
         } else {
             $this->api_scopes = collect($api_scopes)->implode(' ');
         }
+
+        // If api_scopes array is empty, create a log entry and abort
+        if (count(explode(" ", $this->api_scopes)) == 0) {
+            $error_message = 'The Google API scopes array is empty in ' .
+                '`config/glamstack-google.php` connections array. Without this ' .
+                'array config, there are no valid scopes for making API calls ' .
+                'to endpoints.';
+
+            Log::stack((array) config('glamstack-google.auth.log_channels'))
+                ->critical($error_message, [
+                    'event_type' => 'google-api-config-missing-error',
+                    'class' => get_class(),
+                    'status_code' => '501',
+                    'message' => $error_message,
+                    'connection_key' => $this->connection_key,
+                ]);
+
+            abort(501, $error_message);
+        }
     }
 
     /**
@@ -167,10 +190,27 @@ class AuthClient
     {
         if ($file_path == null) {
             $this->file_path = storage_path(
-                'keys/glamstack-google-auth/'. $this->connection_key . '.json'
+                'keys/glamstack-google/'. $this->connection_key . '.json'
             );
         } else {
             $this->file_path = $file_path;
+        }
+
+        // If file does not exist, create a log entry and abort
+        if (file_exists($this->file_path) == false) {
+            $error_message = 'The Google JSON API key for the connection key ' .
+            'cannot be found in `storage/keys/glamstack-google/{key}.json`';
+
+            Log::stack((array) config('glamstack-google.auth.log_channels'))
+                ->critical($error_message, [
+                    'event_type' => 'google-api-key-missing-error',
+                    'class' => get_class(),
+                    'status_code' => '501',
+                    'message' => $error_message,
+                    'connection_key' => $this->connection_key,
+                ]);
+
+            abort(501, $error_message);
         }
     }
 
@@ -326,14 +366,28 @@ class AuthClient
      */
     protected function sendAuthRequest() : object
     {
-        $response = Http::asForm()->post(
+        $request = Http::asForm()->post(
             self::AUTH_BASE_URL,
             [
                 'grant_type' => self::AUTH_GRANT_TYPE,
                 'assertion' => $this->jwt
             ]
         );
-        return $response->object();
+
+        $response = $this->parseApiResponse($request);
+
+        $this->logResponse('post', self::AUTH_BASE_URL, $response);
+
+        // If response was not successful, parse Google API response
+        if ($response->status->successful == false) {
+            if (property_exists($response->object, 'error')) {
+                abort($response->status->code, 'Google SDK Authentication Error. ' . $response->object->error_description);
+            } else {
+                abort(500, 'The Google SDK authentication attempt failed due to an unknown reason in the sendAuthRequest method.');
+            }
+        }
+
+        return $response;
     }
 
     /**
@@ -343,7 +397,124 @@ class AuthClient
      */
     public function authenticate()
     {
-        $this->access_token = $this->sendAuthRequest()->access_token;
+        $this->access_token = $this->sendAuthRequest()->object->access_token;
         return $this->access_token;
+    }
+
+    /**
+     * Convert API Response Headers to Object
+     *
+     * This method is called from the parseApiResponse method to prettify the
+     * Guzzle Headers that are an array with nested array for each value, and
+     * converts the single array values into strings and converts to an object for
+     * easier and consistent accessibility with the parseApiResponse format.
+     *
+     * @param array $header_response
+     * [
+     *     "Date" => array:1 [
+     *       0 => "Sun, 30 Jan 2022 01:18:14 GMT"
+     *     ]
+     *     "Content-Type" => array:1 [
+     *       0 => "application/json"
+     *     ]
+     *     "Transfer-Encoding" => array:1 [
+     *       0 => "chunked"
+     *     ]
+     *     "Connection" => array:1 [
+     *       0 => "keep-alive"
+     *     ]
+     *     "Server" => array:1 [
+     *       0 => "nginx"
+     *     ]
+     *     // ...
+     * ]
+     *
+     * @return array
+     * [
+     *     "Date" => "Sun, 30 Jan 2022 01:11:44 GMT",
+     *     "Content-Type" => "application/json",
+     *     "Transfer-Encoding" => "chunked",
+     *     "Connection" => "keep-alive",
+     *     "Server" => "nginx",
+     *     "Public-Key-Pins-Report-Only" => (truncated),
+     *     "Vary" => "Accept-Encoding",
+     *     "x-okta-request-id" => "A1b2C3D4e5@f6G7H8I9j0k1L2M3",
+     *     "x-xss-protection" => "0",
+     *     "p3p" => "CP="HONK"",
+     *     "x-rate-limit-limit" => "1000",
+     *     "x-rate-limit-remaining" => "998",
+     *     "x-rate-limit-reset" => "1643505155",
+     *     "cache-control" => "no-cache, no-store",
+     *     "pragma" => "no-cache",
+     *     "expires" => "0",
+     *     "content-security-policy" => (truncated),
+     *     "expect-ct" => "report-uri="https://oktaexpectct.report-uri.com/r/t/ct/reportOnly", max-age=0",
+     *     "x-content-type-options" => "nosniff",
+     *     "Strict-Transport-Security" => "max-age=315360000; includeSubDomains",
+     *     "set-cookie" => (truncated)
+     * ]
+     */
+    public function convertHeadersToArray(array $header_response): array
+    {
+        $headers = [];
+
+        foreach ($header_response as $header_key => $header_value) {
+            // If array has multiple keys, leave as array
+            if (count($header_value) > 1) {
+                $headers[$header_key] = $header_value;
+
+            // If array has a single key, convert to a string
+            } else {
+                $headers[$header_key] = $header_value[0];
+            }
+        }
+
+        return $headers;
+    }
+
+    /**
+     * Parse the API response and return custom formatted response for consistency
+     *
+     * @see https://laravel.com/docs/8.x/http-client#making-requests
+     *
+     * @param object $response Response object from API results
+     *
+     * @return object Custom response returned for consistency
+     *  {
+     *    +"headers": [
+     *      "Date" => "Fri, 12 Nov 2021 20:13:55 GMT",
+     *      "Content-Type" => "application/json",
+     *      "Content-Length" => "1623",
+     *      "Connection" => "keep-alive"
+     *    ],
+     *    +"json": "{"id":12345678}"
+     *    +"object": {
+     *      +"id": 12345678
+     *    }
+     *    +"status": {
+     *      +"code": 200
+     *      +"ok": true
+     *      +"successful": true
+     *      +"failed": false
+     *      +"serverError": false
+     *      +"clientError": false
+     *   }
+     * }
+     */
+    public function parseApiResponse(object $response): object
+    {
+        return (object) [
+            'headers' => $this->convertHeadersToArray($response->headers()),
+            'json' => json_encode($response->json()),
+            'object' => $response->object(),
+            'status' => (object) [
+                'code' => $response->status(),
+                'ok' => $response->ok(),
+                'successful' => $response->successful(),
+                'failed' => $response->failed(),
+                'serverError' => $response->serverError(),
+                'clientError' => $response->clientError(),
+            ],
+        ];
     }
 }

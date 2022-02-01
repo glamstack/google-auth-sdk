@@ -23,9 +23,9 @@ This package is used to authenticate with the Google OAuth2 Sever utilizing a [G
 
 The OAUTH service will return a **short-leved API token** that can be used with the [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) to perform `GET`, `POST`, `PATCH`, `DELETE`, etc. API requests that can be found in the [Google API Explorer](https://developers.google.com/apis-explorer) documentation.
 
-To provide a streamlined developer experience, your JSON API key is stored in the `storage/keys/glamstack-google-auth/` directory of your Laravel application, and the scopes for each key are pre-configured in the `config/glamstack-google-auth.php` configuration file for each of your "connections" (1:1 relationship with each JSON key file that has defined scopes).
+To provide a streamlined developer experience, your JSON API key is stored in the `storage/keys/glamstack-google-auth/` directory of your Laravel application, and the scopes for each key are pre-configured in the `config/glamstack-google.php` configuration file for each of your "connections" (1:1 relationship with each JSON key file that has defined scopes).
 
-This SDK supports a global default connection that is defined in your `.env` file, as well as multiple connections that can be used throughout your application as needed using the _connection key_ defined in `config/glamstack-google-auth.php`.
+This SDK supports a global default connection that is defined in your `.env` file, as well as multiple connections that can be used throughout your application as needed using the _connection key_ defined in `config/glamstack-google.php`.
 
 ### Inline Usage
 
@@ -96,6 +96,12 @@ composer require glamstack/google-auth-sdk
 
 > If you are contributing to this package, see [CONTRIBUTING](CONTRIBUTING.md) for instructions on configuring a local composer package with symlinks.
 
+### Publish Configuration
+
+```bash
+php artisan vendor:publish --tag=glamstack-google
+```
+
 #### Related SDK Packages
 
 This SDK provides authentication to be able to use the generic [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) with any endpoint that found in the [Google API Explorer](https://developers.google.com/apis-explorer).
@@ -109,17 +115,17 @@ We have created additional packages that provide defined methods for common serv
 
 ### JSON API Key Storage
 
-By default the SDK will load the Google Service Account JSON File from the `storage/keys/glamstack-google-auth/{connection_key}.json`. With the default connection key of `workspace`, this will be `workspace.json`.
+By default the SDK will load the Google Service Account JSON File from the `storage/keys/glamstack-google/{connection_key}.json`. With the default connection key of `workspace`, this will be `workspace.json`.
 
-1. Create the `storage/keys/glamstack-google-auth/` directory in your Laravel application.
+1. Create the `storage/keys/glamstack-google/` directory in your Laravel application.
 
 2. Add `/storage/keys/` to the `.gitignore` file in the top level of your application directory. This ensures that your JSON key is not accidentally committed to your code repository.
 
-3. After creating your service account key in Google and downloading the JSON file, you should rename the file to `{connection_key}.json` to match the array key specified in `config/glamstack-google-auth.php` and move it to the `storage/keys/glamstack-google-auth` directory.
+3. After creating your service account key in Google and downloading the JSON file, you should rename the file to `{connection_key}.json` to match the array key specified in `config/glamstack-google.php` and move it to the `storage/keys/glamstack-google` directory.
 
 4. Be sure to update the [API Scopes](#api-scopes) based on what you have granted your service account access to. A mismatch in scoped permissions will cause unexpected errors when using the SDK.
 
-5. Repeat steps 3 and 4 for each of the other connection keys that you have configured in `config/glamstack-google-auth.php`.
+5. Repeat steps 3 and 4 for each of the other connection keys that you have configured in `config/glamstack-google.php`.
 
 ### Connection Keys
 
@@ -195,7 +201,7 @@ $google_auth = new \Glamstack\GoogleAuth\AuthClient('my_connection_key');
 $api_token = $google_auth->authenticate();
 ```
 
-> If you encounter errors, ensure that the `storage/keys/glamstack-google-auth/{my_connection_key}.json` file exists and verify your scopes are configured correctly.
+> If you encounter errors, ensure that the `storage/keys/glamstack-google/{my_connection_key}.json` file exists and verify your scopes are configured correctly.
 
 #### Custom Non-Configured Connections
 
@@ -210,7 +216,7 @@ $scopes = [
 
 // Define file path for JSON key
 // https://laravel.com/docs/8.x/helpers#method-storage-path
-$json_file_path = storage_path('storage/keys/glamstack-google-auth/my_custom_key.json');
+$json_file_path = storage_path('storage/keys/glamstack-google/my_custom_key.json');
 
 // Not Officially Supported. Use at your own risk.
 // If your JSON key is stored in the file system outside of the Laravel application,
@@ -351,6 +357,39 @@ You can learn more about the Authorization Scopes required by referencing the [G
 Do not store your JSON key file anywhere that is not included in the `.gitignore` file. This is to avoid committing your credentials to your repository (secret leak)
 
 It is a recommended to store a copy of each JSON API key in your preferred password manager (ex. 1Password, LastPass, etc.) and/or secrets vault (ex. HashiCorp Vault, Ansible, etc.).
+
+## Log Outputs
+
+> The output of error messages is shown in the `README` to allow search engines to index these messages for developer debugging support. Any 5xx error messages will be returned as as `Symfony\Component\HttpKernel\Exception\HttpException` or configuration errors, including any errors in the `__construct()` method.
+
+```php
+$google_auth = new \Glamstack\GoogleAuth\AuthClient('workspace');
+$api_token = $google_auth->authenticate();
+```
+
+#### Valid JSON API Key
+
+```json
+[2022-02-01 02:15:01] local.INFO: POST 200 https://oauth2.googleapis.com/token {"api_endpoint":"https://oauth2.googleapis.com/token","api_method":"POST","class":"Glamstack\\GoogleAuth\\AuthClient","connection_key":"workspace","event_type":"google-auth-api-response-info","message":"POST 200 https://oauth2.googleapis.com/token","status_code":200}
+```
+
+#### Invalid JSON API Key
+
+```json
+[2022-02-01 02:12:51] local.NOTICE: POST 400 https://oauth2.googleapis.com/token {"api_endpoint":"https://oauth2.googleapis.com/token","api_method":"POST","class":"Glamstack\\GoogleAuth\\AuthClient","connection_key":"workspace","event_type":"google-auth-api-response-client-error","google_error_type":"invalid_grant","google_error_description":"Invalid JWT Signature.","message":"POST 400 https://oauth2.googleapis.com/token","status_code":400}
+```
+
+#### Missing Connection Key
+
+```json
+[2022-02-01 02:21:02] local.CRITICAL: The Google connection key is not defined in `config/glamstack-google.php` connections array. Without this array config, there is no API configuration to connect with. {"event_type":"google-api-config-missing-error","class":"Glamstack\\GoogleAuth\\AuthClient","status_code":"501","message":"The Google connection key is not defined in `config/glamstack-google.php` connections array. Without this array config, there is no API configuration to connect with.","connection_key":"workspace2"}
+```
+
+#### Invalid or Mismatched API Scopes
+
+```json
+[2022-02-01 02:22:59] local.NOTICE: POST 400 https://oauth2.googleapis.com/token {"api_endpoint":"https://oauth2.googleapis.com/token","api_method":"POST","class":"Glamstack\\GoogleAuth\\AuthClient","connection_key":"workspace","event_type":"google-auth-api-response-client-error","google_error_type":"invalid_scope","google_error_description":"Invalid OAuth scope or ID token audience provided.","message":"POST 400 https://oauth2.googleapis.com/token","status_code":400}
+```
 
 ## Issue Tracking and Bug Reports
 
