@@ -46,7 +46,7 @@ class AuthClient
      * @param string $file_path (Optional) The file path of the Google JSON key
      * used for Service Account authentication. This parameter should only be
      * used if you are storing your JSON key outside of the
-     * `storage/keys/glamstack-google-auth/` directory of your application
+     * `storage/keys/glamstack-google/` directory of your application
      */
     public function __construct(
         string $connection_key = null,
@@ -55,10 +55,6 @@ class AuthClient
     ) {
         // Set the class connection_key variable.
         $this->setConnectionKey($connection_key);
-
-        // Verify that the glamstack-google-config.php file contains the
-        // provided connection key under the `connections` array.
-        $this->verifyConnectionKeyExists();
 
         // Set the class connection_configuration variable
         $this->setConnectionConfig();
@@ -106,35 +102,40 @@ class AuthClient
     {
         if ($connection_key == null) {
             /** @phpstan-ignore-next-line */
-            $this->connection_key = config('glamstack-google-config.auth.default_connection');
+            $this->connection_key = config('glamstack-google.auth.default_connection');
         } else {
             $this->connection_key = $connection_key;
         }
     }
 
     /**
+     * Set the connection_config class property array
+     *
      * Define an array in the class using the connection configuration in the
-     * glamstack-google-config.php connections array.
+     * glamstack-google.php connections array. If connection key is not specified,
+     * an error log will be created and a 501 abort error will be thrown.
      *
      * @return void
      */
     protected function setConnectionConfig(): void
     {
-        $this->connection_config = config('glamstack-google-config.connections.' . $this->connection_key);
-    }
+        if (array_key_exists($this->connection_key, config('glamstack-google.connections'))) {
+            $this->connection_config = config('glamstack-google.connections.' . $this->connection_key);
+        } else {
+            $error_message = 'The Google connection key is not defined in ' .
+                '`config/glamstack-google.php` connections array. Without this ' .
+                'array config, there is no API configuration to connect with.';
 
-    /**
-     * Verify that the `connection_key` exists in the
-     * glamstack-google-config.php connections array.
-     *
-     * @return void
-     */
-    protected function verifyConnectionKeyExists(): void
-    {
-        if (!array_key_exists($this->connection_key, config('glamstack-google-config.connections'))) {
-            // FIXME: Add logging
-            dd('The connection_key ' . $this->connection_key . ' is not ' .
-            'configured in the glamstack-google-config.php file.');
+            Log::stack((array) config('glamstack-google.auth.log_channels'))
+                ->critical($error_message, [
+                    'event_type' => 'google-api-config-missing-error',
+                    'class' => get_class(),
+                    'status_code' => '501',
+                    'message' => $error_message,
+                    'connection_key' => $this->connection_key,
+                ]);
+
+            abort(501, $error_message);
         }
     }
 
@@ -156,6 +157,25 @@ class AuthClient
         } else {
             $this->api_scopes = collect($api_scopes)->implode(' ');
         }
+
+        // If api_scopes array is empty, create a log entry and abort
+        if (count(explode(" ", $this->api_scopes)) == 0) {
+            $error_message = 'The Google API scopes array is empty in ' .
+                '`config/glamstack-google.php` connections array. Without this ' .
+                'array config, there are no valid scopes for making API calls ' .
+                'to endpoints.';
+
+            Log::stack((array) config('glamstack-google.auth.log_channels'))
+                ->critical($error_message, [
+                    'event_type' => 'google-api-config-missing-error',
+                    'class' => get_class(),
+                    'status_code' => '501',
+                    'message' => $error_message,
+                    'connection_key' => $this->connection_key,
+                ]);
+
+            abort(501, $error_message);
+        }
     }
 
     /**
@@ -170,10 +190,27 @@ class AuthClient
     {
         if ($file_path == null) {
             $this->file_path = storage_path(
-                'keys/glamstack-google-auth/'. $this->connection_key . '.json'
+                'keys/glamstack-google/'. $this->connection_key . '.json'
             );
         } else {
             $this->file_path = $file_path;
+        }
+
+        // If file does not exist, create a log entry and abort
+        if (file_exists($this->file_path) == false) {
+            $error_message = 'The Google JSON API key for the connection key ' .
+            'cannot be found in `storage/keys/glamstack-google/{key}.json`';
+
+            Log::stack((array) config('glamstack-google.auth.log_channels'))
+                ->critical($error_message, [
+                    'event_type' => 'google-api-key-missing-error',
+                    'class' => get_class(),
+                    'status_code' => '501',
+                    'message' => $error_message,
+                    'connection_key' => $this->connection_key,
+                ]);
+
+            abort(501, $error_message);
         }
     }
 
