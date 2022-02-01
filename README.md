@@ -23,9 +23,9 @@ This package is used to authenticate with the Google OAuth2 Sever utilizing a [G
 
 The OAUTH service will return a **short-leved API token** that can be used with the [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) to perform `GET`, `POST`, `PATCH`, `DELETE`, etc. API requests that can be found in the [Google API Explorer](https://developers.google.com/apis-explorer) documentation.
 
-To provide a streamlined developer experience, your JSON API key is stored in the `storage/keys/glamstack-google-auth/` directory of your Laravel application, and the scopes for each key are pre-configured in the `config/glamstack-google-auth.php` configuration file for each of your "connections" (1:1 relationship with each JSON key file that has defined scopes).
+To provide a streamlined developer experience, your JSON API key is stored in the `storage/keys/glamstack-google-auth/` directory of your Laravel application, and the scopes for each key are pre-configured in the `config/glamstack-google.php` configuration file for each of your "connections" (1:1 relationship with each JSON key file that has defined scopes).
 
-This SDK supports a global default connection that is defined in your `.env` file, as well as multiple connections that can be used throughout your application as needed using the _connection key_ defined in `config/glamstack-google-auth.php`.
+This SDK supports a global default connection that is defined in your `.env` file, as well as multiple connections that can be used throughout your application as needed using the _connection key_ defined in `config/glamstack-google.php`.
 
 ### Inline Usage
 
@@ -115,17 +115,17 @@ We have created additional packages that provide defined methods for common serv
 
 ### JSON API Key Storage
 
-By default the SDK will load the Google Service Account JSON File from the `storage/keys/glamstack-google-auth/{connection_key}.json`. With the default connection key of `workspace`, this will be `workspace.json`.
+By default the SDK will load the Google Service Account JSON File from the `storage/keys/glamstack-google/{connection_key}.json`. With the default connection key of `workspace`, this will be `workspace.json`.
 
-1. Create the `storage/keys/glamstack-google-auth/` directory in your Laravel application.
+1. Create the `storage/keys/glamstack-google/` directory in your Laravel application.
 
 2. Add `/storage/keys/` to the `.gitignore` file in the top level of your application directory. This ensures that your JSON key is not accidentally committed to your code repository.
 
-3. After creating your service account key in Google and downloading the JSON file, you should rename the file to `{connection_key}.json` to match the array key specified in `config/glamstack-google-auth.php` and move it to the `storage/keys/glamstack-google-auth` directory.
+3. After creating your service account key in Google and downloading the JSON file, you should rename the file to `{connection_key}.json` to match the array key specified in `config/glamstack-google.php` and move it to the `storage/keys/glamstack-google` directory.
 
 4. Be sure to update the [API Scopes](#api-scopes) based on what you have granted your service account access to. A mismatch in scoped permissions will cause unexpected errors when using the SDK.
 
-5. Repeat steps 3 and 4 for each of the other connection keys that you have configured in `config/glamstack-google-auth.php`.
+5. Repeat steps 3 and 4 for each of the other connection keys that you have configured in `config/glamstack-google.php`.
 
 ### Connection Keys
 
@@ -201,7 +201,7 @@ $google_auth = new \Glamstack\GoogleAuth\AuthClient('my_connection_key');
 $api_token = $google_auth->authenticate();
 ```
 
-> If you encounter errors, ensure that the `storage/keys/glamstack-google-auth/{my_connection_key}.json` file exists and verify your scopes are configured correctly.
+> If you encounter errors, ensure that the `storage/keys/glamstack-google/{my_connection_key}.json` file exists and verify your scopes are configured correctly.
 
 #### Custom Non-Configured Connections
 
@@ -216,7 +216,7 @@ $scopes = [
 
 // Define file path for JSON key
 // https://laravel.com/docs/8.x/helpers#method-storage-path
-$json_file_path = storage_path('storage/keys/glamstack-google-auth/my_custom_key.json');
+$json_file_path = storage_path('storage/keys/glamstack-google/my_custom_key.json');
 
 // Not Officially Supported. Use at your own risk.
 // If your JSON key is stored in the file system outside of the Laravel application,
