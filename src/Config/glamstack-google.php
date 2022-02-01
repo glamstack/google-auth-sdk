@@ -21,18 +21,18 @@ return [
      *      that is easier to triage without unrelated log messages, you can
      *      create a custom log channel and add the channel name to the
      *      array. For example, we recommend creating a custom channel
-     *      (ex. `glamstack-google-workspace`), however you can choose any
+     *      (ex. `glamstack-google-auth`), however you can choose any
      *      name you would like.
-     *      Ex. ['single', 'glamstack-google-example']
+     *      Ex. ['single', 'glamstack-google-auth']
      *
      *      You can also add additional channels that logs should be sent to.
-     *      Ex. ['single', 'glamstack-google-example', 'slack']
+     *      Ex. ['single', 'glamstack-google-auth', 'slack']
      *
      *      @see https://laravel.com/docs/8.x/logging
      */
 
     'auth' => [
-        'default_connection' => env('GOOGLE_AUTH_DEFAULT_CONNECTION', 'workspace'),
+        'default_connection' => env('GOOGLE_DEFAULT_CONNECTION', 'workspace'),
         'log_channels' => ['single'],
     ],
 
@@ -77,7 +77,7 @@ return [
      *
      * By default the SDK will use configuration for the connection_key
      * `workspace`, unless you override this in your `.env` file using
-     * the `GOOGLE_AUTH_DEFAULT_CONNECTION` variable, or pass the connection
+     * the `GOOGLE_DEFAULT_CONNECTION` variable, or pass the connection
      * key as an argument when using the `ApiClient`.
      *
      * The list of OAUTH scopes for Google APIs can be found in the docs.
@@ -134,10 +134,10 @@ return [
          *      array. For example, we recommend creating a custom channel
          *      (ex. `glamstack-google-workspace`), however you can choose any
          *      name you would like.
-         *      Ex. ['single', 'glamstack-google-example']
+         *      Ex. ['single', 'glamstack-google-workspace']
          *
          *      You can also add additional channels that logs should be sent to.
-         *      Ex. ['single', 'glamstack-google-example', 'slack']
+         *      Ex. ['single', 'glamstack-google-workspace', 'slack']
          *
          *      @see https://laravel.com/docs/8.x/logging
          */
@@ -148,7 +148,7 @@ return [
             ],
             'customer_id' => env('GOOGLE_WORKSPACE_CUSTOMER_ID'),
             'domain' => env('GOOGLE_WORKSPACE_DOMAIN'),
-            'email' => env('GOOGLE_AUTH_WORKSPACE_EMAIL'),
+            'email' => env('GOOGLE_WORKSPACE_EMAIL'),
             'log_channels' => ['single']
         ],
 

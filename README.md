@@ -176,7 +176,7 @@ See the documentation in the config file to learn more about configuration param
         ],
         'customer_id' => env('GOOGLE_WORKSPACE_CUSTOMER_ID'),
         'domain' => env('GOOGLE_WORKSPACE_DOMAIN'),
-        'email' => env('GOOGLE_AUTH_WORKSPACE_EMAIL'),
+        'email' => env('GOOGLE_WORKSPACE_EMAIL'),
         'log_channels' => ['single']
     ],
 
@@ -200,10 +200,10 @@ You can learn more about the Authorization Scopes required by referencing the [G
 
 By default, the SDK will use the `workspace` connection key for all API calls across your application unless you change the default connection to a different **_connection key_** defined in the `config/glamstack-google-config.php` file.
 
-You can optionally add the `GOOGLE_AUTH_DEFAULT_CONNECTION` variable to your `.env` file and set the value to the **_connection key_** that you want to use as the default.
+You can optionally add the `GOOGLE_DEFAULT_CONNECTION` variable to your `.env` file and set the value to the **_connection key_** that you want to use as the default.
 
 ```bash
-GOOGLE_AUTH_DEFAULT_CONNECTION="my_connection_key"
+GOOGLE_DEFAULT_CONNECTION="my_connection_key"
 ```
 
 To use the default connection, you do **_not_** need to provide the **_connection key_** to the `AuthClient`.
@@ -218,7 +218,7 @@ $api_token = $google_auth->authenticate();
 
 #### Using Pre-Configured Connections
 
-If you want to use a specific **_connection key_** when using the `AuthClient` that is different from the `GOOGLE_AUTH_DEFAULT_CONNECTION` global variable, you can pass the **_connection key_** that has been configured in `config/glamstack-google-config.php` as the first construct argument for the `AuthClient`.
+If you want to use a specific **_connection key_** when using the `AuthClient` that is different from the `GOOGLE_DEFAULT_CONNECTION` global variable, you can pass the **_connection key_** that has been configured in `config/glamstack-google-config.php` as the first construct argument for the `AuthClient`.
 
 ```php
 // Initialize the SDK
@@ -269,13 +269,13 @@ By default the `client_email` field will be used as the 'Subject Email'. However
 This email address is that of a user account in Google Workspace that contains the appropriate Administrative rights for the APIs that will be utilized. When developing or testing applications, this can be the email address of the developer or test account.
 
 ```bash
-GOOGLE_AUTH_WORKSPACE_EMAIL="dmurphy@example.com"
+GOOGLE_WORKSPACE_EMAIL="dmurphy@example.com"
 ```
 
 When running in production, this should be the email address of a bot service account that you have created as a Google Workspace user that has permissions scoped to the automation that your application provides.
 
 ```bash
-GOOGLE_AUTH_WORKSPACE_EMAIL="my-production-app-service-account@example.com"
+GOOGLE_WORKSPACE_EMAIL="my-production-app-service-account@example.com"
 ```
 
 #### Domain
