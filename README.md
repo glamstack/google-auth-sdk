@@ -96,6 +96,12 @@ composer require glamstack/google-auth-sdk
 
 > If you are contributing to this package, see [CONTRIBUTING](CONTRIBUTING.md) for instructions on configuring a local composer package with symlinks.
 
+### Publish Configuration
+
+```bash
+php artisan vendor:publish --tag=glamstack-google
+```
+
 #### Related SDK Packages
 
 This SDK provides authentication to be able to use the generic [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) with any endpoint that found in the [Google API Explorer](https://developers.google.com/apis-explorer).
