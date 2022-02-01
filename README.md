@@ -21,7 +21,7 @@ The Google Auth SDK is an open source [Composer](https://getcomposer.org/) packa
 
 This package is used to authenticate with the Google OAuth2 Sever utilizing a [Google Service Account](https://cloud.google.com/iam/docs/service-accounts) **JSON API key file**.
 
-The OAUTH service will return a **short-leved API token** that can be used with the [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) to perform `GET`, `POST`, `PATCH`, `DELETE`, etc. API requests that can be found in the [Google API Explorer](https://developers.google.com/apis-explorer) documentation.
+The OAUTH service will return a **short-lived API token** that can be used with the [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) to perform `GET`, `POST`, `PATCH`, `DELETE`, etc. API requests that can be found in the [Google API Explorer](https://developers.google.com/apis-explorer) documentation.
 
 To provide a streamlined developer experience, your JSON API key is stored in the `storage/keys/glamstack-google-auth/` directory of your Laravel application, and the scopes for each key are pre-configured in the `config/glamstack-google.php` configuration file for each of your "connections" (1:1 relationship with each JSON key file that has defined scopes).
 
@@ -30,7 +30,7 @@ This SDK supports a global default connection that is defined in your `.env` fil
 ### Inline Usage
 
 ```php
-// Initialize the SDK using the default connection
+// Initialize the SDK using the `workspace` connection key
 $google_auth = new \Glamstack\GoogleAuth\AuthClient('workspace');
 
 // You can also initialize the SDK using the default connection that you have
@@ -119,9 +119,9 @@ php artisan vendor:publish --tag=glamstack-google
 
 ### Related SDK Packages
 
-This SDK provides authentication to be able to use the generic [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) with any endpoint that found in the [Google API Explorer](https://developers.google.com/apis-explorer).
+This SDK provides authentication to be able to use the generic [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) with any endpoint that can be found in the [Google API Explorer](https://developers.google.com/apis-explorer).
 
-We have created additional packages that provide defined methods for common service endpoints that we use within GitLab IT that you can use instead.
+We have created additional packages that provide defined methods for some of the common service endpoints that GitLab IT uses if you don't want to specify the endpoints yourself.
 
 * [google-workspace-sdk](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-workspace-sdk)
 * [google-cloud-sdk](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-cloud-sdk)
@@ -150,7 +150,7 @@ By default the SDK will load the Google Service Account JSON File from the `stor
 
 2. Add `/storage/keys/` to the `.gitignore` file in the top level of your application directory. This ensures that your JSON key is not accidentally committed to your code repository.
 
-3. After creating your service account key in Google and downloading the JSON file, you should rename the file to `{connection_key}.json` to match the array key specified in `config/glamstack-google.php` and move it to the `storage/keys/glamstack-google` directory.
+3. After creating your service account key in Google and downloading the JSON file, you should rename the file to `{connection_key}.json` to match the connection key specified in `config/glamstack-google.php` and move it to the `storage/keys/glamstack-google` directory.
 
 4. Be sure to update the [API Scopes](#api-scopes) based on what you have granted your service account access to. A mismatch in scoped permissions will cause unexpected errors when using the SDK.
 
@@ -192,9 +192,7 @@ See the documentation in the config file to learn more about configuration param
 
 #### API Scopes
 
-Each connection key array has `api_scopes` that provide a list of [Google API scopes](https://developers.google.com/identity/protocols/oauth2/scopes) that your JSON API key has access to. See the documentation in the `config/glamstack-google-config.php` file for examples of common scopes that you can copy and paste to your connections depending on what has been configured for your JSON API key. The default configuration includes common scopes that are commented out and can simply be uncommented to use them. You can add additional API scopes to the respective array as needed.
-
-If you're just getting started with using the SDK, you should not need to make many changes to this file except for commenting or uncommenting the scopes that you've granted to your JSON API key.
+Each connection key array has `api_scopes` that provide a list of [Google API scopes](https://developers.google.com/identity/protocols/oauth2/scopes) that your JSON API key has access to. See the documentation in the `config/glamstack-google-config.php` file for examples of common scopes that you can copy and paste to the `connections.{connection_key}.api_scopes` array to use depending on what has been configured for your JSON API key.
 
 You can learn more about the Authorization Scopes required by referencing the [Google API Explorer](https://developers.google.com/apis-explorer) documentation for the specific REST endpoint.
 
@@ -282,7 +280,7 @@ GOOGLE_AUTH_WORKSPACE_EMAIL="my-production-app-service-account@example.com"
 
 #### Domain
 
-The Google Domain is utilized with Google Workspace API Request. Add the following variable to your `.env` file to tell Google which domain the API should be used on.
+The Google Domain is utilized with the Google Workspace API Request. Add the following variable to your `.env` file to configure the domain name that is configured for your organization in Google Workspace.
 
 ```bash
 GOOGLE_WORKSPACE_DOMAIN="example.com"
@@ -290,7 +288,7 @@ GOOGLE_WORKSPACE_DOMAIN="example.com"
 
 #### Customer ID
 
-The [Google Customer ID](https://support.google.com/a/answer/10070793?product_name=UnuFlow&hl=en&visit_id=637788489425453961-1161888327&rd=1&src=supportwidget0&hl=en) is required to run Google Workspace API request against your company's account. Add the following variable to your `.env` file.
+The [Google Customer ID](https://support.google.com/a/answer/10070793?product_name=UnuFlow&hl=en&visit_id=637788489425453961-1161888327&rd=1&src=supportwidget0&hl=en) is required to run Google Workspace API request against your company's organization account. Add the following variable to your `.env` file.
 
 ```bash
 GOOGLE_WORKSPACE_CUSTOMER_ID="C12345678"
@@ -302,9 +300,9 @@ TODO: This is a placeholder for documentation after we have implemented and test
 
 ## Logging Configuration
 
-By default, we use the `single` channel for all logs that is pre-configured in your application's `config/logging.php` file. This sends all Google Auth log messages to the `storage/logs/laravel.log` file.
+By default, we use the `single` channel for all logs that is pre-configured in your application's `config/logging.php` file. This sends all Google log messages to the `storage/logs/laravel.log` file.
 
-You can configure the log channels for this SDK in `config/glamstack-google-config.php`. You can configure the log channels for the AuthClient in `auth.log_channels`. You can also configure the log channels for each of your connections in `connections.{connection_key}.log_channels`.
+You can configure the log channels for this SDK in `config/glamstack-google-config.php`. You can configure the log channels for the AuthClient in `auth.log_channels`. You can configure the log channels for each of your connections in `connections.{connection_key}.log_channels`.
 
 ```php
 // config/glamstack-google-config.php
@@ -327,7 +325,7 @@ You can configure the log channels for this SDK in `config/glamstack-google-conf
 
 ### Creating a Log Channel
 
-If you would like to see Google Auth logs in a separate log file that is easier to triage without unrelated log messages, you can create a custom log channel. For example, you can have all `AuthClient` logs sent to a new log channel named `glamstack-google-auth` (or any name you would like).
+If you would like to see Google logs in a separate log file that is easier to triage without unrelated log messages, you can create a custom log channel. For example, you can have all `AuthClient` logs sent to a new log channel named `glamstack-google-auth` (or any name you would like).
 
 Add the custom log channel to `config/logging.php`.
 
@@ -426,4 +424,4 @@ Please visit our [issue tracker](https://gitlab.com/gitlab-com/business-technolo
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) to learn more about how to contribute.-
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) to learn more about how to contribute.
