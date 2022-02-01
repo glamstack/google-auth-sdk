@@ -90,8 +90,13 @@ class GoogleWorkspaceUserService
 
 ### Add Composer Package
 
+This package uses [Calendar Versioning](#calendar-versioning).
+
+We recommend always using a specific version in your `composer.json` file and reviewing the [changelog](changelog/) to see the breaking changes in each release before assuming that the latest release is the right choice for your project.
+
+
 ```bash
-composer require glamstack/google-auth-sdk
+composer require glamstack/google-auth-sdk:2.2.1
 ```
 
 > If you are contributing to this package, see [CONTRIBUTING](CONTRIBUTING.md) for instructions on configuring a local composer package with symlinks.
@@ -102,7 +107,17 @@ composer require glamstack/google-auth-sdk
 php artisan vendor:publish --tag=glamstack-google
 ```
 
-#### Related SDK Packages
+#### Version upgrades
+
+If you have upgraded to a newer version of the package, you should back up your existing configuration file to avoid your custom configuration being overridden.
+
+```bash
+cp config/glamstack-google.php config/glamstack-google.php.bak
+
+php artisan vendor:publish --tag=glamstack-google
+```
+
+### Related SDK Packages
 
 This SDK provides authentication to be able to use the generic [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) with any endpoint that found in the [Google API Explorer](https://developers.google.com/apis-explorer).
 
@@ -110,6 +125,20 @@ We have created additional packages that provide defined methods for common serv
 
 * [google-workspace-sdk](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-workspace-sdk)
 * [google-cloud-sdk](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-cloud-sdk)
+
+### Calendar Versioning
+
+The GitLab IT Engineering team uses a modified version of [Calendar Versioning (CalVer)](https://calver.org/) instead of [Semantic Versioning (SemVer)](https://semver.org/). CalVer has a YY (Ex. 2021 => 21) but having a version `21.xx` feels unintuitive to us. Since our team started this in 2021, we decided to use the last integer of the year only (2021 => 1.x, 2022 => 2.x, etc).
+
+The version number represents the release date in `vY.M.D` format.
+
+#### Why we don't use semantic versioning
+
+1. We are continuously shipping to `main`/`master`/`production` and make breaking changes in most releases, so having semantic backwards-compatible version numbers is unintuitive for us.
+1. We don't like to debate what to call our release/milestone and whether it's a major, minor, or patch release. We simply write code, write a changelog, and ship it on the day that it's done. The changelog publication date becomes the tagged version number (Ex. `2022-02-01` is `v2.2.1`). We may refer to a bigger version number for larger releases (Ex. `v2.2`), however this is only for monthly milestone planning and canonical purposes only. All code tags include the day of release (Ex. `v2.2.1`).
+1. This allows us to automate using GitLab CI/CD to automate the version tagging process based on the date the pipeline job runs.
+1. We update each of our project `composer.json` files that use this package to specific or new version numbers during scheduled change windows without worrying about differences and/or breaking changes with "staying up to date with the latest version". We don't maintain any forks or divergent branches.
+1. Our packages use underlying packages in your existing Laravel application, so keeping your Laravel application version up-to-date addresses most security concerns.
 
 ## Environment Configuration
 
