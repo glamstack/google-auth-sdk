@@ -352,6 +352,39 @@ Do not store your JSON key file anywhere that is not included in the `.gitignore
 
 It is a recommended to store a copy of each JSON API key in your preferred password manager (ex. 1Password, LastPass, etc.) and/or secrets vault (ex. HashiCorp Vault, Ansible, etc.).
 
+## Log Outputs
+
+> The output of error messages is shown in the `README` to allow search engines to index these messages for developer debugging support. Any 5xx error messages will be returned as as `Symfony\Component\HttpKernel\Exception\HttpException` or configuration errors, including any errors in the `__construct()` method.
+
+```php
+$google_auth = new \Glamstack\GoogleAuth\AuthClient('workspace');
+$api_token = $google_auth->authenticate();
+```
+
+#### Valid JSON API Key
+
+```json
+[2022-02-01 02:15:01] local.INFO: POST 200 https://oauth2.googleapis.com/token {"api_endpoint":"https://oauth2.googleapis.com/token","api_method":"POST","class":"Glamstack\\GoogleAuth\\AuthClient","connection_key":"workspace","event_type":"google-auth-api-response-info","message":"POST 200 https://oauth2.googleapis.com/token","status_code":200}
+```
+
+#### Invalid JSON API Key
+
+```json
+[2022-02-01 02:12:51] local.NOTICE: POST 400 https://oauth2.googleapis.com/token {"api_endpoint":"https://oauth2.googleapis.com/token","api_method":"POST","class":"Glamstack\\GoogleAuth\\AuthClient","connection_key":"workspace","event_type":"google-auth-api-response-client-error","google_error_type":"invalid_grant","google_error_description":"Invalid JWT Signature.","message":"POST 400 https://oauth2.googleapis.com/token","status_code":400}
+```
+
+#### Missing Connection Key
+
+```json
+[2022-02-01 02:21:02] local.CRITICAL: The Google connection key is not defined in `config/glamstack-google.php` connections array. Without this array config, there is no API configuration to connect with. {"event_type":"google-api-config-missing-error","class":"Glamstack\\GoogleAuth\\AuthClient","status_code":"501","message":"The Google connection key is not defined in `config/glamstack-google.php` connections array. Without this array config, there is no API configuration to connect with.","connection_key":"workspace2"}
+```
+
+#### Invalid or Mismatched API Scopes
+
+```json
+[2022-02-01 02:22:59] local.NOTICE: POST 400 https://oauth2.googleapis.com/token {"api_endpoint":"https://oauth2.googleapis.com/token","api_method":"POST","class":"Glamstack\\GoogleAuth\\AuthClient","connection_key":"workspace","event_type":"google-auth-api-response-client-error","google_error_type":"invalid_scope","google_error_description":"Invalid OAuth scope or ID token audience provided.","message":"POST 400 https://oauth2.googleapis.com/token","status_code":400}
+```
+
 ## Issue Tracking and Bug Reports
 
 Please visit our [issue tracker](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-auth-sdk/-/issues) and create an issue or comment on an existing issue.
