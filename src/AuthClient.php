@@ -36,22 +36,18 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account
      *
-     * @param string $connection_key (Optional) The connection key to use from
-     * the configuration file to set the appropriate Google Auth Settings.
-     * Default: `workspace`
+     * @param ?string $connection_key
+     *      (Optional) The connection key to use from
+     *      the configuration file to set the appropriate Google Auth Settings.
+     *      Default: `workspace`
      *
-     * @param array $api_scopes (Optional) The Google API Scopes that will be
-     * used with the token
-     *
-     * @param string $file_path (Optional) The file path of the Google JSON key
-     * used for Service Account authentication. This parameter should only be
-     * used if you are storing your JSON key outside of the
-     * `storage/keys/glamstack-google/` directory of your application
+     * @param ?array $connection_config
+     *      (Optional) A custom connection configuration to use instead of
+     *      utilizing the configuration file.
      */
     public function __construct(
-        string $connection_key = null,
-        array $api_scopes = [],
-        string $file_path = null
+        ?string $connection_key = null,
+        ?array $connection_config = []
     ) {
         // Set the class connection_key variable.
         $this->setConnectionKey($connection_key);
