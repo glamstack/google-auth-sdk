@@ -129,6 +129,43 @@ class AuthClient
     }
 
     /**
+     * Set Google OAuth2 utilizing the `$connection_config` array
+     *
+     * The `$connection_config` is validated to contain all the required keys.
+     *
+     * The method then sets the `connection_key` to `custom` which will override
+     * the default value.
+     *
+     * The method will set the `connection_config` class variable to the provided
+     * configuration and set the `file_path` as well.
+     *
+     * @param array $connection_config
+     *      Customized connection configuration to use for Google OAuth2
+     *      Authentication.
+     *
+     * @return void
+     */
+    protected function setCustomConfiguration(array $connection_config): void
+    {
+        // Validate the `connection_config` array has all the required keys
+        $this->validationConnectionConfigArray($connection_config);
+
+        // Set `connection_key` to custom
+        $this->setConnectionKey('custom');
+
+        // Set the `connection_config` class variable
+        $this->setConnectionConfig($connection_config);
+
+        // Set the `file_path` to the Google JSON key to the provided path
+        $this->file_path = $this->connection_config['file_path'];
+
+        // Parse the JSON file to get the contents
+        $file_contents = $this->parseJsonFile($this->file_path);
+
+        // Set the Google OAuth2 Parameters
+        $this->setAuthParameters($file_contents);
+    }
+    /**
      * Set the connection_config class property array
      *
      * Define an array in the class using the connection configuration in the
