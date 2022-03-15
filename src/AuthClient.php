@@ -78,20 +78,37 @@ class AuthClient
     }
 
     /**
-     * Set the connection_key class variable. The connection_key variable by default
-     * will be set to `workspace`. This can be overridden when initializing the
-     * SDK with a different connection key which is passed into this function to
-     * set the class variable to the provided key.
+     * Utilize the `connection_key` configuration for authentication.
      *
-     * @param string $connection_key (Optional) The connection key to use from the
-     * configuration file.
+     * The connection_key variable by default will be set to `workspace`.
+     * This can be overridden when initializing the SDK with a different
+     * connection key which is passed into this function to set the class
+     * variable to the provided key.
+     *
+     * @param ?string $connection_key
+     *      (Optional) The connection key to use from the
+     *      configuration file.
      *
      * @return void
      */
-    protected function setConnectionKey(?string $connection_key) : void
+    protected function setConnectionKeyConfiguration(?string $connection_key) : void
     {
-        if ($connection_key == null) {
-            /** @phpstan-ignore-next-line */
+        // Set the class connection_key variable.
+        $this->setConnectionKey($connection_key);
+
+        // Set the `file_path` class variable
+        $this->setFilePath();
+
+        // Parse the Google Authentication JSON file
+        $file_contents = $this->parseJsonFile($this->file_path);
+
+        // Set the Google OAuth2 parameters
+        $this->setAuthParameters($file_contents);
+
+        // Set the class connection_configuration variable
+        $this->setConnectionConfig();
+
+    }
             $this->connection_key = config('glamstack-google.auth.default_connection');
         } else {
             $this->connection_key = $connection_key;
