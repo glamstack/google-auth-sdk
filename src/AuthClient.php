@@ -49,23 +49,17 @@ class AuthClient
         ?string $connection_key = null,
         ?array $connection_config = []
     ) {
-        // Set the class connection_key variable.
-        $this->setConnectionKey($connection_key);
 
-        // Set the class connection_configuration variable
-        $this->setConnectionConfig();
+        // If the `connection_config` parameter is empty utilize the connection
+        // key configuration.
+        if (empty($connection_config)){
+            $this->setConnectionKeyConfiguration($connection_key);
+        } else {
+            $this->setCustomConfiguration($connection_config);
+        }
 
-        // Set the class api_scopes variable.
-        $this->setApiScopes($api_scopes);
-
-        // Set the class file_path variable
-        $this->setFilePath($file_path);
-
-        // Get the file contents from the Google JSON key
-        $file_contents = $this->parseJsonFile($this->file_path);
-
-        // Set the Google Authorization Parameters from the $file_contents
-        $this->setAuthParameters($file_contents);
+        // Set the class api_scopes variable
+        $this->setApiScopes();
 
         // Set the Google Subject email
         $this->setSubjectEmail();
