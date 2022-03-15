@@ -217,16 +217,25 @@ class AuthClient
      * Set the connection_config class property array
      *
      * Define an array in the class using the connection configuration in the
-     * glamstack-google.php connections array. If connection key is not specified,
-     * an error log will be created and a 501 abort error will be thrown.
+     * glamstack-google.php connections array. If the `connection_key` provided
+     * is not in the connections array it will generate an error message and log
+     *
+     * If `custom_configuration` is provided it will use that to set the class
+     * property.
+     *
+     * @param ?array $custom_configuration
+     *      (Optional) Custom configuration array provided during initialization
      *
      * @return void
      */
-    protected function setConnectionConfig(): void
+    protected function setConnectionConfig(?array $custom_configuration = []): void
     {
-        if (array_key_exists($this->connection_key, config('glamstack-google.connections'))) {
+        if (array_key_exists($this->connection_key, config('glamstack-google.connections')) && empty($custom_configuration)) {
             $this->connection_config = config('glamstack-google.connections.' . $this->connection_key);
+        } elseif ($custom_configuration) {
+            $this->connection_config = $custom_configuration;
         } else {
+
             $error_message = 'The Google connection key is not defined in ' .
                 '`config/glamstack-google.php` connections array. Without this ' .
                 'array config, there is no API configuration to connect with.';
