@@ -230,32 +230,20 @@ $api_token = $google_auth->authenticate();
 
 > If you encounter errors, ensure that the `storage/keys/glamstack-google/{my_connection_key}.json` file exists and verify your scopes are configured correctly.
 
-#### Custom Non-Configured Connections
-
-If you want to connect to a Google API service that you have not pre-configured in `config/glamstack-google-config.php`, you will need to provide an array of scopes and the path to the JSON key to use when initializing the `AuthClient`.
+### Dynamic Variable Connection per API Call
+If not utilizing a connection key in the config/glamstack-google.php configuration file, you can pass an array as the second argument with a custom connection configuration. This should only be used when using dynamic variables that are stored in your database.
 
 ```
-// Define scopes array for custom connection
-$scopes = [
-    'https://www.googleapis.com/auth/cloud-platform',
-    'https://www.googleapis.com/auth/compute'
-];
+$client = new Glamstack\GoogleAuth\AuthClient(null, [
+    'api_scopes' => [
+        'https://www.googleapis.com/auth/ndev.clouddns.readwrite'
+    ],
+  	'email' => 'klibby@example.com',
+  	'file_path' => 'storage/keys/glamstack-google/workspace.json',
+    'log_channels' => ['single']
+]);
 
-// Define file path for JSON key
-// https://laravel.com/docs/8.x/helpers#method-storage-path
-$json_file_path = storage_path('storage/keys/glamstack-google/my_custom_key.json');
-
-// Not Officially Supported. Use at your own risk.
-// If your JSON key is stored in the file system outside of the Laravel application,
-// you can use the full path to the file. You may need to adjust permissions based
-// on the system user or service that your Laravel application runs with.
-// $json_file_path = '/etc/gcloud-keys/my_custom_key.json';
-
-// Initialize Google Auth Client
-$google_auth = new \Glamstack\GoogleAuth\AuthClient(null, $scopes, $json_file_path);
-
-// Send Auth Request
-$api_token = $google_auth->authenticate();
+$client->authenticate();
 ```
 
 ## Google Workspace API Connections
