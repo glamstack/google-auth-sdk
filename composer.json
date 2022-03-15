@@ -1,6 +1,7 @@
 {
     "name": "glamstack/google-auth-sdk",
     "description": "Google Auth API SDK for Laravel",
+    "license": "Apache-2.0",
     "authors": [
         {
             "name": "Dillon Wheeler",
