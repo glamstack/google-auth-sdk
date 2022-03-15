@@ -254,16 +254,18 @@ class AuthClient
     }
 
     /**
-     * Set the API scopes for the Google Authentication API token. The scope
-     * will default to the configuration file for the connection, and can be
-     * overridden with the $api_scopes variable being set during initialization.
+     * Set the API scopes for the Google Authentication API token.
      *
-     * @param ?array $api_scopes (Optional) API Scopes to be set. This will
-     * override the configuration file API Scope settings.
+     * The scope will default to the configuration file for the connection, and
+     * can be overridden with the $api_scopes variable being set during initialization.
+     *
+     * @param ?array $api_scopes
+     *      (Optional) API Scopes to be set. This will override the configuration
+     *      file API Scope settings.
      *
      * @return void
      */
-    protected function setApiScopes(?array $api_scopes) : void
+    protected function setApiScopes(?array $api_scopes= []) : void
     {
         if (!$api_scopes) {
             $this->api_scopes = collect($this->connection_config['api_scopes'])
@@ -293,14 +295,20 @@ class AuthClient
     }
 
     /**
-     * Set the class variable $file_path to either the provided $connection_key
-     * configuration or the $file_path provided from class initialization.
+     * Set the class variable $file_path
      *
-     * @param ?string $file_path The file path to set for the Google JSON token
+     * The `file_path` will be set to the provided $connection_key configuration or
+     * the `file_path` in the `connection_config` array from class initialization.
+     *
+     * If no `file_path` is provided it will default to
+     *`'keys/glamstack-google/'. $this->connection_key . '.json'`
+     *
+     * @param ?string $file_path
+     *      (Optional) The file path to set for the Google JSON token
      *
      * @return void
      */
-    protected function setFilePath(?string $file_path)
+    protected function setFilePath(?string $file_path = null)
     {
         if ($file_path == null) {
             $this->file_path = storage_path(
@@ -313,7 +321,7 @@ class AuthClient
         // If file does not exist, create a log entry and abort
         if (file_exists($this->file_path) == false) {
             $error_message = 'The Google JSON API key for the connection key ' .
-            'cannot be found in `storage/keys/glamstack-google/{key}.json`';
+            'cannot be found in `storage/keys/glamstack-google/' . $this->connection_key . '.json`';
 
             Log::stack((array) config('glamstack-google.auth.log_channels'))
                 ->critical($error_message, [
@@ -331,7 +339,8 @@ class AuthClient
     /**
      * Parse the Google JSON key
      *
-     * @param string $file_path The file path of the Google JSON key
+     * @param string $file_path
+     *      The file path of the Google JSON key
      *
      * @return object
      */
@@ -344,10 +353,12 @@ class AuthClient
     }
 
     /**
-     * Utilize the Google JSON key contents to set the class variables
-     * `private_key` and `client_email`
+     * Set the `private_key` and `client_email` class variables
      *
-     * @param object $json_file_contents The json_decoded Google JSON key token
+     * Utilizes the JSON file contents to fetch the information.
+     *
+     * @param object $json_file_contents
+     *      The json_decoded Google JSON key token
      *
      * @return void
      */
@@ -358,8 +369,9 @@ class AuthClient
     }
 
     /**
-     * Check if the 'GOOGLE_SUBJECT_EMAIL' variable is set in `.env`. If it is
-     * set the class variable `subject_email` to the environment variable.
+     * Check if the 'GOOGLE_SUBJECT_EMAIL' variable is set in `.env`.
+     *
+     * If it is set the class variable `subject_email` to the environment variable.
      * If it is not set we will use the client_email from the JSON token.
      *
      * @return void
@@ -382,7 +394,7 @@ class AuthClient
      *
      * @return string
      */
-    protected function createJwtHeader()
+    protected function createJwtHeader(): string
     {
         $jwt_header = [
             'alg' => self::AUTH_ALGORITHM,
@@ -402,7 +414,7 @@ class AuthClient
      *
      * @return string
      */
-    protected function createJwtClaim()
+    protected function createJwtClaim(): string
     {
         $jwt_claim = [
             'iss' => $this->client_email,
@@ -428,11 +440,11 @@ class AuthClient
      *
      * @see https://www.php.net/manual/en/function.openssl-pkey-get-private.php
      *
-     * @param string $jwt_header The JWT Header string required for Google
-     * OAuth2 authentication
+     * @param string $jwt_header
+     *      The JWT Header string required for Google OAuth2 authentication
      *
-     * @param string $jwt_claim The JWT Claim string required for Google OAuth2
-     * authentication
+     * @param string $jwt_claim
+     *      The JWT Claim string required for Google OAuth2 authentication
      *
      * @return string
      */
@@ -462,7 +474,8 @@ class AuthClient
      *
      * @see https://stackoverflow.com/a/65893524
      *
-     * @param string $input The input string to encode
+     * @param string $input
+     *      The input string to encode
      *
      * @return string
      */
@@ -476,7 +489,7 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account#:~:text=Making%20the%20access%20token%20request
      *
-     * $return object
+     * @return object
      */
     protected function sendAuthRequest() : object
     {
@@ -509,10 +522,9 @@ class AuthClient
      *
      * @return string
      */
-    public function authenticate()
+    public function authenticate(): string
     {
-        $this->access_token = $this->sendAuthRequest()->object->access_token;
-        return $this->access_token;
+        return $this->sendAuthRequest()->object->access_token;
     }
 
     /**
