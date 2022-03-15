@@ -19,6 +19,7 @@ class AuthClient
     const AUTH_TYPE = 'JWT';
     const AUTH_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
     const ENCRYPT_METHOD = 'sha256';
+    const REQUIRED_CONFIG_PARAMETERS = ['api_scopes', 'email', 'file_path', 'log_channels'];
 
     private string $access_token;
     private string $api_scopes;
