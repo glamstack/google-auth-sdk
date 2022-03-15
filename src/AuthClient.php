@@ -109,6 +109,19 @@ class AuthClient
         $this->setConnectionConfig();
 
     }
+
+    /**
+     * Set the `connection_key` class variable
+     *
+     * If `$connection_key` is null it will default to
+     * `glamstack-google.auth.default_connection`
+     *
+     * @param ?string $connection_key
+     *      (Optional) The connection to use from configuration file.
+     */
+    protected function setConnectionKey(?string $connection_key = null): void
+    {
+        if($connection_key == null) {
             $this->connection_key = config('glamstack-google.auth.default_connection');
         } else {
             $this->connection_key = $connection_key;
