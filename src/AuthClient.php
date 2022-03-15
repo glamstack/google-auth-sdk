@@ -21,7 +21,6 @@ class AuthClient
     const ENCRYPT_METHOD = 'sha256';
     const REQUIRED_CONFIG_PARAMETERS = ['api_scopes', 'email', 'file_path', 'log_channels'];
 
-    private string $access_token;
     private string $api_scopes;
     private string $client_email;
     private array $connection_config;
