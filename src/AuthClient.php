@@ -165,6 +165,54 @@ class AuthClient
         // Set the Google OAuth2 Parameters
         $this->setAuthParameters($file_contents);
     }
+
+    /**
+     * Validates the custom configuration provided
+     *
+     * @param array $connection_config
+     *      The configuration array provided during initialization
+     *
+     * @return void
+     */
+    protected function validationConnectionConfigArray(array $connection_config): void
+    {
+        foreach (self::REQUIRED_CONFIG_PARAMETERS as $parameter) {
+            if (!array_key_exists($parameter, $connection_config)) {
+                $error_message = 'The Google Auth ' . $parameter . ' is not defined ' .
+                    'in the ApiClient construct conneciton_config array provided. ' .
+                    'This is a required parameter to be passed in not using the ' .
+                    'configuration file and connection_key initialization method.';
+
+                Log::stack((array) config('glamstack-google.auth.log_channels'))
+                    ->critical(
+                        $error_message,
+                        [
+                            'event_type' => 'google-auth-api-config-missing-error',
+                            'class' => get_class(),
+                            'status_code' => '501',
+                            'message' => $error_message,
+                        ]
+                    );
+            } elseif (count($connection_config) < count(self::REQUIRED_CONFIG_PARAMETERS)) {
+                $error_message = 'The Google SDK connection_config array provided ' .
+                    'in the ApiClient construct connection_config array ' .
+                    'size should be ' . count(self::REQUIRED_CONFIG_PARAMETERS) .
+                    'but ' . count($connection_config) . ' array keys were provided.';
+
+                Log::stack((array) config('glamstack-google.auth.log_channels'))
+                    ->critical(
+                        $error_message,
+                        [
+                            'event_type' => 'google-auth-api-config-missing-error',
+                            'class' => get_class(),
+                            'status_code' => '501',
+                            'message' => $error_message,
+                        ]
+                    );
+            }
+        }
+    }
+
     /**
      * Set the connection_config class property array
      *
