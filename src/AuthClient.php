@@ -52,53 +52,29 @@ class AuthClient
     }
 
     /**
-     * Utilize the `connection_key` configuration for authentication.
+     * Set the connection_config class property array
      *
-     * The connection_key variable by default will be set to `workspace`.
-     * This can be overridden when initializing the SDK with a different
-     * connection key which is passed into this function to set the class
-     * variable to the provided key.
-     *
-     * @param ?string $connection_key
-     *      (Optional) The connection key to use from the
-     *      configuration file.
+     * @param array $connection_configuration
+     *      Connection configuration array provided during initialization
      *
      * @return void
      */
-    protected function setConnectionKeyConfiguration(?string $connection_key) : void
+    protected function setConnectionConfig(array $connection_configuration): void
     {
-        // Set the class connection_key variable.
-        $this->setConnectionKey($connection_key);
-
-        // Set the `file_path` class variable
-        $this->setFilePath();
-
-        // Parse the Google Authentication JSON file
-        $file_contents = $this->parseJsonFile($this->file_path);
-
-        // Set the Google OAuth2 parameters
-        $this->setAuthParameters($file_contents);
-
-        // Set the class connection_configuration variable
-        $this->setConnectionConfig();
-
+        $this->connection_config = $connection_configuration;
     }
 
     /**
-     * Set the `connection_key` class variable
+     * Verify that at either `file_path` or `json_key` is set
      *
-     * If `$connection_key` is null it will default to
-     * `glamstack-google.auth.default_connection`
-     *
-     * @param ?string $connection_key
-     *      (Optional) The connection to use from configuration file.
+     * @return void
      */
-    protected function setConnectionKey(?string $connection_key = null): void
+    protected function verifyJsonKeyConfig(): void
     {
-        if($connection_key == null) {
-            $this->connection_key = config('glamstack-google.auth.default_connection');
-        } else {
-            $this->connection_key = $connection_key;
+        if (
+            !array_key_exists('file_path', $this->connection_config) &&
+            !array_key_exists('json_key', $this->connection_config)) {
+            throw new Exception('testing');
         }
     }
 
