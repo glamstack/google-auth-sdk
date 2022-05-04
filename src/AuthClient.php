@@ -274,20 +274,29 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account#:~:text=Forming%20the%20JWT%20claim%20set
      *
+     * @param string $client_email
+     *      The `client_email` from the Google JSON key
+     *
+     * @param string $parsed_api_scopes
+     *      The `api_scopes` from the construct method
+     *
+     * @param string $subject_email
+     *      The `subject_email` to use for authentication
+     *
      * @return string
      */
-    protected function createJwtClaim(): string
+    protected function createJwtClaim(string $client_email, string $parsed_api_scopes, string $subject_email): string
     {
         $jwt_claim = [
-            'iss' => $this->client_email,
-            'scope' => $this->api_scopes,
+            'iss' => $client_email,
+            'scope' => $parsed_api_scopes,
             'aud' => self::AUTH_BASE_URL,
-            'exp' => time()+3600,
+            'exp' => time() + 3600,
             'iat' => time(),
-            'sub' => $this->subject_email
+            'sub' => $subject_email
         ];
         $encoded_jwt_claim = $this->base64_url_encode(
-            (string) json_encode($jwt_claim)
+            (string)json_encode($jwt_claim)
         );
         return $encoded_jwt_claim;
     }
