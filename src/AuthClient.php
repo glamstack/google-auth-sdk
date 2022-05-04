@@ -234,21 +234,18 @@ class AuthClient
     }
 
     /**
-     * Check if the 'GOOGLE_SUBJECT_EMAIL' variable is set in `.env`.
+     * Set the `private_key` and `client_email` class variables
      *
-     * If it is set the class variable `subject_email` to the environment variable.
-     * If it is not set we will use the client_email from the JSON token.
+     * Utilizes the JSON file contents to fetch the information.
      *
-     * @return void
+     * @param object $json_file_contents
+     *      The json_decoded Google JSON key token
+     *
+     * @return string
      */
-    protected function setSubjectEmail() : void
+    protected function getPrivateKey(object $json_file_contents): string
     {
-        if ($this->connection_config['email'] != null) {
-            /** @phpstan-ignore-next-line */
-            $this->subject_email = $this->connection_config['email'];
-        } else {
-            $this->subject_email = $this->client_email;
-        }
+        return $json_file_contents->private_key;
     }
 
     /**
