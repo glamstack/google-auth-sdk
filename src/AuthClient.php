@@ -183,12 +183,11 @@ class AuthClient
      *
      * @return object
      */
-    protected function parseJsonFile(string $file_path) : object
+    protected function parseJsonFile(string $file_path): object
     {
-        $file_contents = (object) json_decode(
-            (string) file_get_contents($file_path)
+        return (object)json_decode(
+            (string)file_get_contents($file_path)
         );
-        return $file_contents;
     }
 
     /**
