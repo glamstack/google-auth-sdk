@@ -203,6 +203,25 @@ class AuthClient
         return collect($this->connection_config['api_scopes'])
             ->implode(' ');
     }
+
+    /**
+     * Get the Google Subject Email if key exists in construct
+     *
+     * This will return null if the `subject_email` key is not used
+     *
+     * @return string | null
+     */
+    protected function getSubjectEmail(): string|null
+    {
+        if (array_key_exists('subject_email', $this->connection_config)) {
+            return $this->connection_config['subject_email'];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get the `client_email` from the Google JSON key
      *
      * @param object $json_file_contents
      *      The json_decoded Google JSON key token
