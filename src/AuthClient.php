@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Http;
 
 class AuthClient
 {
-
     // Standard parameters for building JWT request with Google OAuth Server.
     // They are put here for easy changing if necessary
     const AUTH_BASE_URL = 'https://oauth2.googleapis.com/token';
@@ -15,7 +14,6 @@ class AuthClient
     const AUTH_TYPE = 'JWT';
     const AUTH_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
     const ENCRYPT_METHOD = 'sha256';
-    const REQUIRED_CONFIG_PARAMETERS = ['api_scopes', 'email', 'file_path', 'log_channels'];
 
     private string $api_scopes;
     private string $client_email;
@@ -25,6 +23,7 @@ class AuthClient
     private string $jwt;
     private string $private_key;
     private string $subject_email;
+    private AuthClientModel $auth_model;
 
     /**
      * This function takes care of configuring the JWT that is used for the
@@ -32,45 +31,24 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account
      *
-     * @param ?string $connection_key
-     *      (Optional) The connection key to use from
-     *      the configuration file to set the appropriate Google Auth Settings.
-     *      Default: `workspace`
-     *
-     * @param ?array $connection_config
-     *      (Optional) A custom connection configuration to use instead of
-     *      utilizing the configuration file.
+     * @param array $connection_config
+     *      The connection configuration to use for Google OAuth
      */
     public function __construct(
-        ?string $connection_key = null,
-        ?array $connection_config = []
-    ) {
+        array $connection_config = []
+    )
+    {
+        // Create a new AuthClientModel
+        $this->auth_model = new AuthClientModel();
 
-        // If the `connection_config` parameter is empty utilize the connection
-        // key configuration.
-        if (empty($connection_config)){
-            $this->setConnectionKeyConfiguration($connection_key);
-        } else {
-            $this->setCustomConfiguration($connection_config);
-        }
+        // Utilize the model to ensure we have the proper inputs
+        $this->auth_model->verifyConstructor($connection_config);
 
-        // Set the class api_scopes variable
-        $this->setApiScopes();
+        // Set the `connection_config` class variable
+        $this->setConnectionConfig($connection_config);
 
-        // Set the Google Subject email
-        $this->setSubjectEmail();
-
-        // Create the encrypted JWT Headers
-        $jwt_headers = $this->createJwtHeader();
-
-        // Create the encrypted JWT Claim
-        $jwt_claim = $this->createJwtClaim();
-
-        // Create the signature to append to the JWT
-        $signature = $this->createSignature($jwt_headers, $jwt_claim);
-
-        // Set the class jwt variable to the Google OAuth2 required string
-        $this->jwt = $jwt_headers.'.'.$jwt_claim.'.'.$signature;
+        // Verify that either a `file_path` or `json_key` has been provided
+        $this->verifyJsonKeyConfig();
     }
 
     /**
