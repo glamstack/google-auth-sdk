@@ -2,15 +2,12 @@
 
 namespace Glamstack\GoogleAuth;
 
-use Glamstack\GoogleAuth\Traits\ResponseLog;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AuthClient
 {
-    use ResponseLog;
 
     // Standard parameters for building JWT request with Google OAuth Server.
     // They are put here for easy changing if necessary
@@ -166,50 +163,6 @@ class AuthClient
         $this->setAuthParameters($file_contents);
     }
 
-    /**
-     * Validates the custom configuration provided
-     *
-     * @param array $connection_config
-     *      The configuration array provided during initialization
-     *
-     * @return void
-     */
-    protected function validationConnectionConfigArray(array $connection_config): void
-    {
-        foreach (self::REQUIRED_CONFIG_PARAMETERS as $parameter) {
-            if (!array_key_exists($parameter, $connection_config)) {
-                $error_message = 'The Google Auth ' . $parameter . ' is not defined ' .
-                    'in the ApiClient construct conneciton_config array provided. ' .
-                    'This is a required parameter to be passed in not using the ' .
-                    'configuration file and connection_key initialization method.';
-
-                Log::stack((array) config('glamstack-google.auth.log_channels'))
-                    ->critical(
-                        $error_message,
-                        [
-                            'event_type' => 'google-auth-api-config-missing-error',
-                            'class' => get_class(),
-                            'status_code' => '501',
-                            'message' => $error_message,
-                        ]
-                    );
-            } elseif (count($connection_config) < count(self::REQUIRED_CONFIG_PARAMETERS)) {
-                $error_message = 'The Google SDK connection_config array provided ' .
-                    'in the ApiClient construct connection_config array ' .
-                    'size should be ' . count(self::REQUIRED_CONFIG_PARAMETERS) .
-                    'but ' . count($connection_config) . ' array keys were provided.';
-
-                Log::stack((array) config('glamstack-google.auth.log_channels'))
-                    ->critical(
-                        $error_message,
-                        [
-                            'event_type' => 'google-auth-api-config-missing-error',
-                            'class' => get_class(),
-                            'status_code' => '501',
-                            'message' => $error_message,
-                        ]
-                    );
-            }
         }
     }
 
@@ -236,20 +189,6 @@ class AuthClient
             $this->connection_config = $custom_configuration;
         } else {
 
-            $error_message = 'The Google connection key is not defined in ' .
-                '`config/glamstack-google.php` connections array. Without this ' .
-                'array config, there is no API configuration to connect with.';
-
-            Log::stack((array) config('glamstack-google.auth.log_channels'))
-                ->critical($error_message, [
-                    'event_type' => 'google-api-config-missing-error',
-                    'class' => get_class(),
-                    'status_code' => '501',
-                    'message' => $error_message,
-                    'connection_key' => $this->connection_key,
-                ]);
-
-            abort(501, $error_message);
         }
     }
 
@@ -274,23 +213,6 @@ class AuthClient
             $this->api_scopes = collect($api_scopes)->implode(' ');
         }
 
-        // If api_scopes array is empty, create a log entry and abort
-        if (count(explode(" ", $this->api_scopes)) == 0) {
-            $error_message = 'The Google API scopes array is empty in ' .
-                '`config/glamstack-google.php` connections array. Without this ' .
-                'array config, there are no valid scopes for making API calls ' .
-                'to endpoints.';
-
-            Log::stack((array) config('glamstack-google.auth.log_channels'))
-                ->critical($error_message, [
-                    'event_type' => 'google-api-config-missing-error',
-                    'class' => get_class(),
-                    'status_code' => '501',
-                    'message' => $error_message,
-                    'connection_key' => $this->connection_key,
-                ]);
-
-            abort(501, $error_message);
         }
     }
 
@@ -318,21 +240,6 @@ class AuthClient
             $this->file_path = $file_path;
         }
 
-        // If file does not exist, create a log entry and abort
-        if (file_exists($this->file_path) == false) {
-            $error_message = 'The Google JSON API key for the connection key ' .
-            'cannot be found in `storage/keys/glamstack-google/' . $this->connection_key . '.json`';
-
-            Log::stack((array) config('glamstack-google.auth.log_channels'))
-                ->critical($error_message, [
-                    'event_type' => 'google-api-key-missing-error',
-                    'class' => get_class(),
-                    'status_code' => '501',
-                    'message' => $error_message,
-                    'connection_key' => $this->connection_key,
-                ]);
-
-            abort(501, $error_message);
         }
     }
 
