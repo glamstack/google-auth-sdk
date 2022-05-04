@@ -337,7 +337,7 @@ class AuthClient
         );
 
         // Encode the private key
-        $encoded_signature = $this->base64_url_encode($this->private_key);
+        $encoded_signature = $this->base64_url_encode($private_key);
 
         return $encoded_signature;
     }
