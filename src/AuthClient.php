@@ -2,9 +2,8 @@
 
 namespace Glamstack\GoogleAuth;
 
-use Illuminate\Http\Client\Response;
+use Glamstack\GoogleAuth\Models\AuthClientModel;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Str;
 
 class AuthClient
 {
