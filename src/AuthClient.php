@@ -362,27 +362,30 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account#:~:text=Making%20the%20access%20token%20request
      *
+     * @param string $jwt
+     *      The JWT to use for authentication
+     *
      * @return object
      */
-    protected function sendAuthRequest() : object
+    protected function sendAuthRequest(string $jwt): object
     {
         $request = Http::asForm()->post(
             self::AUTH_BASE_URL,
             [
                 'grant_type' => self::AUTH_GRANT_TYPE,
-                'assertion' => $this->jwt
+                'assertion' => $jwt
             ]
         );
 
         $response = $this->parseApiResponse($request);
 
-        $this->logResponse('post', self::AUTH_BASE_URL, $response);
-
         // If response was not successful, parse Google API response
-        if ($response->status->successful == false) {
+        if (!$response->status->successful) {
             if (property_exists($response->object, 'error')) {
+                //TODO: Return an exception
                 abort($response->status->code, 'Google SDK Authentication Error. ' . $response->object->error_description);
             } else {
+                //TODO: return an exception
                 abort(500, 'The Google SDK authentication attempt failed due to an unknown reason in the sendAuthRequest method.');
             }
         }
