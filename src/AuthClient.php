@@ -262,7 +262,7 @@ class AuthClient
             'typ' => self::AUTH_TYPE,
         ];
         $encoded_jwt_header = $this->base64_url_encode(
-            (string) json_encode($jwt_header)
+            (string)json_encode($jwt_header)
         );
         return $encoded_jwt_header;
     }
