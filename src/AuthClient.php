@@ -394,13 +394,49 @@ class AuthClient
     }
 
     /**
-     * Send authentication request to the Google OAuth2 Server
+     * Parse the API response and return custom formatted response for consistency
      *
-     * @return string
+     * @see https://laravel.com/docs/8.x/http-client#making-requests
+     *
+     * @param object $response Response object from API results
+     *
+     * @return object Custom response returned for consistency
+     *  {
+     *    +"headers": [
+     *      "Date" => "Fri, 12 Nov 2021 20:13:55 GMT",
+     *      "Content-Type" => "application/json",
+     *      "Content-Length" => "1623",
+     *      "Connection" => "keep-alive"
+     *    ],
+     *    +"json": "{"id":12345678}"
+     *    +"object": {
+     *      +"id": 12345678
+     *    }
+     *    +"status": {
+     *      +"code": 200
+     *      +"ok": true
+     *      +"successful": true
+     *      +"failed": false
+     *      +"serverError": false
+     *      +"clientError": false
+     *   }
+     * }
      */
-    public function authenticate(): string
+    protected function parseApiResponse(object $response): object
     {
-        return $this->sendAuthRequest()->object->access_token;
+        return (object)[
+            'headers' => $this->convertHeadersToArray($response->headers()),
+            'json' => json_encode($response->json()),
+            'object' => $response->object(),
+            'status' => (object)[
+                'code' => $response->status(),
+                'ok' => $response->ok(),
+                'successful' => $response->successful(),
+                'failed' => $response->failed(),
+                'serverError' => $response->serverError(),
+                'clientError' => $response->clientError(),
+            ],
+        ];
     }
 
     /**
@@ -456,7 +492,7 @@ class AuthClient
      *     "set-cookie" => (truncated)
      * ]
      */
-    public function convertHeadersToArray(array $header_response): array
+    protected function convertHeadersToArray(array $header_response): array
     {
         $headers = [];
 
@@ -465,58 +501,12 @@ class AuthClient
             if (count($header_value) > 1) {
                 $headers[$header_key] = $header_value;
 
-            // If array has a single key, convert to a string
+                // If array has a single key, convert to a string
             } else {
                 $headers[$header_key] = $header_value[0];
             }
         }
 
         return $headers;
-    }
-
-    /**
-     * Parse the API response and return custom formatted response for consistency
-     *
-     * @see https://laravel.com/docs/8.x/http-client#making-requests
-     *
-     * @param object $response Response object from API results
-     *
-     * @return object Custom response returned for consistency
-     *  {
-     *    +"headers": [
-     *      "Date" => "Fri, 12 Nov 2021 20:13:55 GMT",
-     *      "Content-Type" => "application/json",
-     *      "Content-Length" => "1623",
-     *      "Connection" => "keep-alive"
-     *    ],
-     *    +"json": "{"id":12345678}"
-     *    +"object": {
-     *      +"id": 12345678
-     *    }
-     *    +"status": {
-     *      +"code": 200
-     *      +"ok": true
-     *      +"successful": true
-     *      +"failed": false
-     *      +"serverError": false
-     *      +"clientError": false
-     *   }
-     * }
-     */
-    public function parseApiResponse(object $response): object
-    {
-        return (object) [
-            'headers' => $this->convertHeadersToArray($response->headers()),
-            'json' => json_encode($response->json()),
-            'object' => $response->object(),
-            'status' => (object) [
-                'code' => $response->status(),
-                'ok' => $response->ok(),
-                'successful' => $response->successful(),
-                'failed' => $response->failed(),
-                'serverError' => $response->serverError(),
-                'clientError' => $response->clientError(),
-            ],
-        ];
     }
 }
