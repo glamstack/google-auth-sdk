@@ -317,19 +317,21 @@ class AuthClient
      * @param string $jwt_claim
      *      The JWT Claim string required for Google OAuth2 authentication
      *
+     * @param string $private_key
+     *      The Google JSON key `private_key` value
+     *
      * @return string
      */
-    protected function createSignature(string $jwt_header, string $jwt_claim) : string
+    protected function createSignature(string $jwt_header, string $jwt_claim, string $private_key): string
     {
         // Parse the private key and prepare it for use
-        $key_id = openssl_pkey_get_private($this->private_key);
+        $key_id = openssl_pkey_get_private($private_key);
 
         // Create the open SSL Signature using the provided inputs and
         // encryption method
         openssl_sign(
-            $jwt_header.'.'.$jwt_claim,
-            $this->private_key,
-            /** @phpstan-ignore-next-line */
+            $jwt_header . '.' . $jwt_claim,
+            $private_key,
             $key_id,
             self::ENCRYPT_METHOD
         );
