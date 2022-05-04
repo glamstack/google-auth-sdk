@@ -122,79 +122,56 @@ class AuthClient
     }
 
     /**
-     * Set the connection_config class property array
+     * Get the file path from the construct array
      *
-     * Define an array in the class using the connection configuration in the
-     * glamstack-google.php connections array. If the `connection_key` provided
-     * is not in the connections array it will generate an error message and log
+     * Will return null if the `file_path` key is not set
      *
-     * If `custom_configuration` is provided it will use that to set the class
-     * property.
-     *
-     * @param ?array $custom_configuration
-     *      (Optional) Custom configuration array provided during initialization
-     *
-     * @return void
+     * @return string|null
      */
-    protected function setConnectionConfig(?array $custom_configuration = []): void
+    protected function getFilePath(): string|null
     {
-        if (array_key_exists($this->connection_key, config('glamstack-google.connections')) && empty($custom_configuration)) {
-            $this->connection_config = config('glamstack-google.connections.' . $this->connection_key);
-        } elseif ($custom_configuration) {
-            $this->connection_config = $custom_configuration;
+        if (array_key_exists('file_path', $this->connection_config)) {
+            return $this->connection_config['file_path'];
         } else {
-
+            return null;
         }
     }
 
     /**
-     * Set the API scopes for the Google Authentication API token.
+     * Get the JSON key from the construct array
      *
-     * The scope will default to the configuration file for the connection, and
-     * can be overridden with the $api_scopes variable being set during initialization.
+     * Will return null if the 'json_key' key is not set
      *
-     * @param ?array $api_scopes
-     *      (Optional) API Scopes to be set. This will override the configuration
-     *      file API Scope settings.
-     *
-     * @return void
+     * @return string|null
      */
-    protected function setApiScopes(?array $api_scopes= []) : void
+    protected function getJsonKeyString(): string|null
     {
-        if (!$api_scopes) {
-            $this->api_scopes = collect($this->connection_config['api_scopes'])
-                ->implode(' ');
+        if (array_key_exists('json_key', $this->connection_config)) {
+            return $this->connection_config['json_key'];
         } else {
-            $this->api_scopes = collect($api_scopes)->implode(' ');
-        }
-
+            return null;
         }
     }
 
     /**
-     * Set the class variable $file_path
+     * Determine rather to use the `json_key` or `file_path`
      *
-     * The `file_path` will be set to the provided $connection_key configuration or
-     * the `file_path` in the `connection_config` array from class initialization.
+     * This will set the JSON key used for authentication
      *
-     * If no `file_path` is provided it will default to
-     *`'keys/glamstack-google/'. $this->connection_key . '.json'`
+     * @param string|null $json_key_string
+     *      A Google JSON key formatted string to use for Google OAuth
      *
-     * @param ?string $file_path
-     *      (Optional) The file path to set for the Google JSON token
+     * @param string|null $file_path
+     *      The file path to the JSON key to use for Google OAuth
      *
-     * @return void
+     * @return object
      */
-    protected function setFilePath(?string $file_path = null)
+    protected function setKeyContents(?string $json_key_string, ?string $file_path): object
     {
-        if ($file_path == null) {
-            $this->file_path = storage_path(
-                'keys/glamstack-google/'. $this->connection_key . '.json'
-            );
+        if ($json_key_string != null) {
+            return (object)json_decode($json_key_string);
         } else {
-            $this->file_path = $file_path;
-        }
-
+            return $this->parseJsonFile($file_path);
         }
     }
 
