@@ -192,9 +192,17 @@ class AuthClient
     }
 
     /**
-     * Set the `private_key` and `client_email` class variables
+     * Set the API scopes for the Google Authentication API token.
      *
-     * Utilizes the JSON file contents to fetch the information.
+     * The return is space seperated string
+     *
+     * @return string
+     */
+    protected function getApiScopes(): string
+    {
+        return collect($this->connection_config['api_scopes'])
+            ->implode(' ');
+    }
      *
      * @param object $json_file_contents
      *      The json_decoded Google JSON key token
