@@ -226,12 +226,11 @@ class AuthClient
      * @param object $json_file_contents
      *      The json_decoded Google JSON key token
      *
-     * @return void
+     * @return string
      */
-    protected function setAuthParameters(object $json_file_contents) : void
+    protected function getClientEmail(object $json_file_contents): string
     {
-        $this->private_key = $json_file_contents->private_key;
-        $this->client_email = $json_file_contents->client_email;
+        return $json_file_contents->client_email;
     }
 
     /**
