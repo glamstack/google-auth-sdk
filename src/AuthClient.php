@@ -15,14 +15,7 @@ class AuthClient
     const AUTH_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
     const ENCRYPT_METHOD = 'sha256';
 
-    private string $api_scopes;
-    private string $client_email;
     private array $connection_config;
-    private string $connection_key;
-    private string $file_path;
-    private string $jwt;
-    private string $private_key;
-    private string $subject_email;
     private AuthClientModel $auth_model;
 
     /**
@@ -79,44 +72,53 @@ class AuthClient
     }
 
     /**
-     * Set Google OAuth2 utilizing the `$connection_config` array
+     * Send authentication request to the Google OAuth2 Server
      *
-     * The `$connection_config` is validated to contain all the required keys.
-     *
-     * The method then sets the `connection_key` to `custom` which will override
-     * the default value.
-     *
-     * The method will set the `connection_config` class variable to the provided
-     * configuration and set the `file_path` as well.
-     *
-     * @param array $connection_config
-     *      Customized connection configuration to use for Google OAuth2
-     *      Authentication.
-     *
-     * @return void
+     * @return string
      */
-    protected function setCustomConfiguration(array $connection_config): void
+    public function authenticate(): string
     {
-        // Validate the `connection_config` array has all the required keys
-        $this->validationConnectionConfigArray($connection_config);
+        // Get the file path loaded into the construct method
+        $file_path = $this->getFilePath();
 
-        // Set `connection_key` to custom
-        $this->setConnectionKey('custom');
+        // Get the JSON key string loaded into the construct method
+        $json_key_string = $this->getJsonKeyString();
 
-        // Set the `connection_config` class variable
-        $this->setConnectionConfig($connection_config);
+        // Parse the JSON and return an object
+        $json_key = $this->setKeyContents($json_key_string, $file_path);
 
-        // Set the `file_path` to the Google JSON key to the provided path
-        $this->file_path = $this->connection_config['file_path'];
+        // Set the class api_scopes variable
+        $api_scopes = $this->getApiScopes();
 
-        // Parse the JSON file to get the contents
-        $file_contents = $this->parseJsonFile($this->file_path);
+        // Set the Google Subject email
+        $subject_email = $this->getSubjectEmail();
 
-        // Set the Google OAuth2 Parameters
-        $this->setAuthParameters($file_contents);
-    }
+        // Set the Google Client email
+        $client_email = $this->getClientEmail($json_key);
 
+        // Set the private key to use for authentication
+        $private_key = $this->getPrivateKey($json_key);
+
+        // If subject email is not supplied set the subject_email to the client_email
+        if (!$subject_email) {
+            $subject_email = $client_email;
         }
+
+        // Create the encrypted JWT Headers
+        $jwt_headers = $this->createJwtHeader();
+
+        // Create the encrypted JWT Claim
+        $jwt_claim = $this->createJwtClaim($client_email, $api_scopes, $subject_email);
+
+        // Create the signature to append to the JWT
+        $signature = $this->createSignature($jwt_headers, $jwt_claim, $private_key);
+
+        // Set the class jwt variable to the Google OAuth2 required string
+        $jwt = $jwt_headers . '.' . $jwt_claim . '.' . $signature;
+
+        // Send the authentication request with the `jwt` and return the
+        // access_token from the response
+        return $this->sendAuthRequest($jwt)->object->access_token;
     }
 
     /**
