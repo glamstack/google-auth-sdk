@@ -269,6 +269,21 @@ class AuthClient
     }
 
     /**
+     * Encoding schema utilized by Google OAuth2 Servers
+     *
+     * @see https://stackoverflow.com/a/65893524
+     *
+     * @param string $input
+     *      The input string to encode
+     *
+     * @return string
+     */
+    protected function base64_url_encode(string $input): string
+    {
+        return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
+    }
+
+    /**
      * Create and encode the required JWT Claims for Google OAuth2
      * authentication
      *
@@ -340,21 +355,6 @@ class AuthClient
         $encoded_signature = $this->base64_url_encode($private_key);
 
         return $encoded_signature;
-    }
-
-    /**
-     * Encoding schema utilized by Google OAuth2 Servers
-     *
-     * @see https://stackoverflow.com/a/65893524
-     *
-     * @param string $input
-     *      The input string to encode
-     *
-     * @return string
-     */
-    protected function base64_url_encode(string $input) : string
-    {
-        return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
     }
 
     /**
