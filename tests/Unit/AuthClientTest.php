@@ -13,7 +13,7 @@ it('will throw exception if file_path or json_key is not set', function(){
        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite'],
        'subject_email' => 'example@example.com'
    ]);
-})->expectExceptionMessage('Either the `file_path` or `json_key` array key is required to be set');
+})->expectExceptionMessage('You must specify either the file_path or json_key in the connection_config array.');
 
 it('get a file path if provided', function() {
     $file_path_connection_config = [
