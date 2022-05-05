@@ -4,6 +4,12 @@ namespace Unit;
 
 use Glamstack\GoogleAuth\Tests\Fakes\AuthClientFake;
 
+it('will throw exception if missing required parameter', function(){
+    $client = new AuthClientFake([
+       'file_path' => 'tests/fakes/fake_key_file.json'
+    ]);
+})->expectExceptionMessage('The required option "api_scopes" is missing.');
+
 /**
  * Testing the validation will throw exception if there is not a json key
  * provided
