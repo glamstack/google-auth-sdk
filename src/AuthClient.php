@@ -67,7 +67,7 @@ class AuthClient
         if (
             !array_key_exists('file_path', $this->connection_config) &&
             !array_key_exists('json_key', $this->connection_config)) {
-            throw new Exception('testing');
+            throw new Exception('You must specify either the file_path or json_key in the connection_config array.');
         }
     }
 
