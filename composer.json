@@ -1,6 +1,16 @@
 {
     "name": "glamstack/google-auth-sdk",
     "description": "Google Auth API SDK for Laravel",
+    "keywords": [
+        "Glamstack",
+        "authentication",
+        "authclient",
+        "google-auth",
+        "google",
+        "auth",
+        "laravel",
+        "apiclient"
+    ],
     "license": "Apache-2.0",
     "authors": [
         {
