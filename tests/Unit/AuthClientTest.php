@@ -33,16 +33,18 @@ it('get a file path if provided', function() {
 });
 
 it('get json key string from construct', function(){
-    $json_string = '{"type": "service_account",
-  "project_id": "project_id",
-  "private_key_id": "key_id",
-  "private_key": "key_data",
-  "client_email": "xxxxx@xxxxx.iam.gserviceaccount.com",
-  "client_id": "123455667897654",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "some stuff"}';
+    $json_string = '{
+        "type": "service_account",
+        "project_id": "project_id",
+        "private_key_id": "key_id",
+        "private_key": "key_data",
+        "client_email": "xxxxx@xxxxx.iam.gserviceaccount.com",
+        "client_id": "123455667897654",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "some stuff"
+    }';
 
     $file_path_connection_config = [
         'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite'],
@@ -228,16 +230,18 @@ it('can set key contents from file', function(){
 
 it('can set key contents from string json', function(){
     //TODO: Update this to be more realistic
-    $json_string = '{"type": "service_account",
-  "project_id": "project_id",
-  "private_key_id": "key_id",
-  "private_key": "key_data",
-  "client_email": "xxxxx@xxxxx.iam.gserviceaccount.com",
-  "client_id": "1234567890",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "some stuff"}';
+    $json_string = '{
+        "type": "service_account",
+        "project_id": "project_id",
+        "private_key_id": "key_id",
+        "private_key": "key_data",
+        "client_email": "xxxxx@xxxxx.iam.gserviceaccount.com",
+        "client_id": "1234567890",
+        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+        "token_uri": "https://oauth2.googleapis.com/token",
+        "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+        "client_x509_cert_url": "some stuff"
+    }';
 
     $file_path_connection_config = [
         'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite'],
