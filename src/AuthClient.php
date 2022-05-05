@@ -4,6 +4,7 @@ namespace Glamstack\GoogleAuth;
 
 use Glamstack\GoogleAuth\Models\AuthClientModel;
 use Illuminate\Support\Facades\Http;
+use Exception;
 
 class AuthClient
 {
@@ -382,10 +383,10 @@ class AuthClient
         if (!$response->status->successful) {
             if (property_exists($response->object, 'error')) {
                 //TODO: Return an exception
-                abort($response->status->code, 'Google SDK Authentication Error. ' . $response->object->error_description);
+                throw new Exception('Google SDK Authentication Error. ' . $response->object->error_description, $response->status->code );
             } else {
                 //TODO: return an exception
-                abort(500, 'The Google SDK authentication attempt failed due to an unknown reason in the sendAuthRequest method.');
+                throw new Exception('The Google SDK authentication attempt failed due to an unknown reason in the sendAuthRequest method.', 500);
             }
         }
 
