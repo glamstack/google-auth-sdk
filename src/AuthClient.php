@@ -27,6 +27,7 @@ class AuthClient
      *
      * @param array $connection_config
      *      The connection configuration to use for Google OAuth
+     * @throws Exception
      */
     public function __construct(
         array $connection_config = []
@@ -62,12 +63,15 @@ class AuthClient
      * Verify that at either `file_path` or `json_key` is set
      *
      * @return void
+     * @throws Exception
      */
     protected function verifyJsonKeyConfig(): void
     {
+//        dd($this->connection_config);
         if (
             !array_key_exists('file_path', $this->connection_config) &&
             !array_key_exists('json_key', $this->connection_config)) {
+//            dd('error?');
             throw new Exception('You must specify either the file_path or json_key in the connection_config array.');
         }
     }
@@ -76,6 +80,7 @@ class AuthClient
      * Send authentication request to the Google OAuth2 Server
      *
      * @return string
+     * @throws Exception
      */
     public function authenticate(): string
     {
@@ -119,7 +124,13 @@ class AuthClient
 
         // Send the authentication request with the `jwt` and return the
         // access_token from the response
-        return $this->sendAuthRequest($jwt)->object->access_token;
+        $response = $this->sendAuthRequest($jwt);
+
+        if(property_exists($response->object, 'access_token')){
+            return $response->object->access_token;
+        } else {
+            throw new Exception('Google OAuth2 Authentication Failed', 500);
+        }
     }
 
     /**
