@@ -7,7 +7,7 @@ use Glamstack\GoogleAuth\AuthClient;
 it('can authenticate with Google OAuth Server via json file', function(){
     $string_key_connection_config = [
         'api_scopes' => ['https://www.googleapis.com/auth/cloud-platform.read-only'],
-        'file_path' => 'tests/Storage/keys/integration_test_key.json'
+        'json_key_file_path' => 'tests/Storage/keys/integration_test_key.json'
     ];
     $client = new AuthClient($string_key_connection_config);
     $auth_token = $client->authenticate();
@@ -17,7 +17,7 @@ it('can authenticate with Google OAuth Server via json file', function(){
 it('will throw exception if authentication fails', function(){
     $string_key_connection_config = [
         'api_scopes' => ['https://www.googleapis.com/auth/cloud-platform.read-only'],
-        'file_path' => 'tests/Storage/keys/incorrect_key.json'
+        'json_key_file_path' => 'tests/Storage/keys/incorrect_key.json'
     ];
     $client = new AuthClient($string_key_connection_config);
     $client->authenticate();
@@ -26,7 +26,7 @@ it('will throw exception if authentication fails', function(){
 it('will throw exception is permissions are incorrect', function(){
     $string_key_connection_config = [
         'api_scopes' => [],
-        'file_path' => 'tests/Storage/keys/integration_test_key.json'
+        'json_key_file_path' => 'tests/Storage/keys/integration_test_key.json'
     ];
     $client = new AuthClient($string_key_connection_config);
     $auth_token = $client->authenticate();
