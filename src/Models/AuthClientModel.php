@@ -50,7 +50,7 @@ class AuthClientModel
             ->default(null)
             ->info('The email address of the user for which the application is requesting delegated access. Only used for Google Workspace SDK');
 
-        $resolver->define('file_path')
+        $resolver->define('json_key_file_path')
             ->allowedTypes('string', 'null')
             ->default(null)
             ->info('The file path location to the Google JSON key');
