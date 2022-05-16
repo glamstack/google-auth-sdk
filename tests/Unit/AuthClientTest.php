@@ -216,7 +216,7 @@ it('can set key contents from file', function(){
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
     $client = new AuthClientFake($file_path_connection_config);
-    $file_contents = $client->setKeyContents(null, $file_path_connection_config['json_key_file_path']);
+    $file_contents = $client->getKeyContents(null, $file_path_connection_config['json_key_file_path']);
     expect($file_contents->type)->toBe('service_account');
     expect($file_contents->project_id)->toBe('project_id');
     expect($file_contents->private_key_id)->toBe('key_id');
@@ -249,7 +249,7 @@ it('can set key contents from string json', function(){
         'json_key' => $json_string
     ];
     $client = new AuthClientFake($file_path_connection_config);
-    $file_contents = $client->setKeyContents($json_string, null);
+    $file_contents = $client->getKeyContents($json_string, null);
     expect($file_contents->type)->toBe('service_account');
     expect($file_contents->project_id)->toBe('project_id');
     expect($file_contents->client_id)->toBe('1234567890');
