@@ -29,67 +29,89 @@ This SDK does not utilize any `.env` files or configuration files, rather those 
 
 ### SDK Initialization
 
-#### Required Array Keys
+#### api_scopes
 
-When initializing the SDK the following are required to be set:
-1. `api_scopes`
-    - Array of strings
-    - The api scopes that will be used by the auth token
-    - Can contain multiple scopes
-    - See [API Scopes](#api-scopes) for more details
+Authentication will fail if the api scopes requested is not configured for the Google Account.
 
-1. `file_path` or `json_key`
-    - The SDK will require one of them to be set
+You can learn more about the Authorization Scopes required by referencing the [Google API Explorer](https://developers.google.com/apis-explorer) documentation for the specific REST endpoint.
 
-#### Optional Array Keys
+```php
+// Option 1
+$google_auth = new \Glamstack\GoogleAuth\AuthClient([
+    // ...
+    'api_scopes' => ['https://www.googleapis.com/auth/admin.directory.user'],
+]);
+```
 
-1. `subject_email`
-    - Subject email is generally only used for Google Workspace API calls
-    - See [Subject Email](#subject-email) for more details
+```php
+// Option 2
+$api_scopes = [
+    https://www.googleapis.com/auth/cloud-platform
+    https://www.googleapis.com/auth/cloudplatformprojects
+];
+
+$google_auth = new \Glamstack\GoogleAuth\AuthClient([
+    // ...
+    'api_scopes' => $api_scopes,
+]);
+```
+
+#### file_path
+
+> You can provide either the `file_path` or the `json_key` as a string.
+
+```php
+$google_auth = new \Glamstack\GoogleAuth\AuthClient([
+    // ...
+    'file_path' => storage_path('keys/google_json_api_key.json'),
+]);
+```
+
+#### json_key
+
+> You can provide either the `file_path` or the `json_key` as a string.
+
+**Security Warning:** You should never commit your service account key into your source code as a variable to avoid compromising your credentials for your GCP organization or projects.
+
+```php
+// Get service account from your model (`GoogleServiceAccount` is an example)
+$service_account = \App\Models\GoogleServiceAccount::where('id', '123456')->firstOrFail();
+
+// Get JSON key string from database column that has an encrypted value
+$json_key_string = decrypt($service_account->json_key);
+
+$google_auth = new \Glamstack\GoogleAuth\AuthClient([
+    // ...
+    'json_key' => $json_key_string,
+]);
+```
+
+#### subject_email
+
+> This is an optional key.
+
+This is only used by Google Workspace API and other services that use [Domain-Wide Delegation](https://developers.google.com/admin-sdk/directory/v1/guides/delegation). If you are only using the SDK for Google Cloud API services, you do not need to include this variable during initialization.
+
+By default the `client_email` field will be used as the `Subject Email`. However, if you are utilizing this SDK to authenticate with any Google Endpoints that require [Domain-Wide Delegation](https://developers.google.com/admin-sdk/directory/v1/guides/delegation) then you will have to add the `subject_email` key during initialization.
+
+This email address is that of a user account in Google Workspace that contains the appropriate Administrative rights for the APIs that will be utilized. When developing or testing applications, this can be the email address of the developer or test account.
+
+When running in production, this should be the email address of a bot service account that you have created as a Google Workspace user that has permissions scoped to the automation that your application provides.
+
+```php
+$google_auth = new \Glamstack\GoogleAuth\AuthClient([
+    // ...
+    'subject_email' => 'klibby@example.com'
+]);
+```
 
 ### Inline Usage
-
-#### Utilizing the `file_path` To Load The JSON API Key File 
 
 ```php
 // Initialize the SDK using a JSON API key file
 $google_auth = new \Glamstack\GoogleAuth\AuthClient([
     'api_scopes' => ['https://www.googleapis.com/auth/admin.directory.user'],
     'file_path' => storage_path('keys/google_json_api_key.json'),
-]);
-
-// Send Auth Request to get JWT token
-$api_token = $google_auth->authenticate();
-
-// Perform API Request using short-lived JWT token
-// https://developers.google.com/admin-sdk/directory/reference/rest/v1/users/get
-$user_key = 'klibby@example.com';
-$response = Http::withToken($api_token)
-    ->get('https://admin.googleapis.com/admin/directory/v1/users/' . $user_key);
-
-return $response->object;
-```
-
-#### Utilizing The `json_key` To Load The JSON API Key String
-
-```php
-// Initialize the SDK using a JSON API key file
-$json_key_string = '{
-  "type": "service_account",
-  "project_id": "project_id",
-  "private_key_id": "key_id",
-  "private_key": "key_data",
-  "client_email": "example@example.iam.gserviceaccount.com",
-  "client_id": "1234567890",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "fake_client_cert"
-}'
-
-$google_auth = new \Glamstack\GoogleAuth\AuthClient([
-    'api_scopes' => ['https://www.googleapis.com/auth/admin.directory.user'],
-    'json_key' => $json_key_string,
 ]);
 
 // Send Auth Request to get JWT token
@@ -153,7 +175,7 @@ We recommend always using a specific version in your `composer.json` file and re
 
 
 ```bash
-composer require glamstack/google-auth-sdk:2.2.1
+composer require glamstack/google-auth-sdk:2.5.18
 ```
 
 > If you are contributing to this package, see [CONTRIBUTING](CONTRIBUTING.md) for instructions on configuring a local composer package with symlinks.
@@ -164,8 +186,8 @@ This SDK provides authentication to be able to use the generic [Laravel HTTP Cli
 
 We have created additional packages that provide defined methods for some of the common service endpoints that GitLab IT uses if you don't want to specify the endpoints yourself.
 
-* [google-workspace-sdk](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-workspace-sdk)
-* [google-cloud-sdk](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-cloud-sdk)
+* [google-workspace-sdk](https://gitlab.com/glamstack/google-workspace-sdk)
+* [google-cloud-sdk](https://gitlab.com/glamstack/google-cloud-sdk)
 
 ### Calendar Versioning
 
@@ -180,28 +202,6 @@ The version number represents the release date in `vY.M.D` format.
 1. This allows us to automate using GitLab CI/CD to automate the version tagging process based on the date the pipeline job runs.
 1. We update each of our project `composer.json` files that use this package to specific or new version numbers during scheduled change windows without worrying about differences and/or breaking changes with "staying up to date with the latest version". We don't maintain any forks or divergent branches.
 1. Our packages use underlying packages in your existing Laravel application, so keeping your Laravel application version up-to-date addresses most security concerns.
-
-#### API Scopes
-
-Authentication will fail if the api scopes requested is not configured for the Google Account.
-
-You can learn more about the Authorization Scopes required by referencing the [Google API Explorer](https://developers.google.com/apis-explorer) documentation for the specific REST endpoint.
-
-## Google Workspace API Connections
-
-#### Subject Email
-
-> This variable is only used by Google Workspace API and other services that use [Domain-Wide Delegation](https://developers.google.com/admin-sdk/directory/v1/guides/delegation). If you are only using the SDK for Google Cloud API services, you do not need to include this variable during initialization.
-
-By default the `client_email` field will be used as the 'Subject Email'. However, if you are utilizing this SDK to authenticate with any Google Endpoints that require [Domain-Wide Delegation](https://developers.google.com/admin-sdk/directory/v1/guides/delegation) then you will have to add the `subject_email` key during initialization.
-
-This email address is that of a user account in Google Workspace that contains the appropriate Administrative rights for the APIs that will be utilized. When developing or testing applications, this can be the email address of the developer or test account.
-
-When running in production, this should be the email address of a bot service account that you have created as a Google Workspace user that has permissions scoped to the automation that your application provides.
-
-## Google Cloud Platform API Connections
-
-TODO: This is a placeholder for documentation after we have implemented and tested the GCP API endpoints.
 
 ## Logging Configuration
 
@@ -223,9 +223,9 @@ It is a recommended to store a copy of each JSON API key in your preferred passw
 
 ## Exceptions
 
-#### Missing Required Array Parameter
+These are the list of expected exceptions.
 
-Expected Exception
+#### Missing Required Array Parameter
 
 ```bash
 Symfony\Component\OptionsResolver\Exception\MissingOptionsException : The required option "api_scopes" is missing.
@@ -233,23 +233,17 @@ Symfony\Component\OptionsResolver\Exception\MissingOptionsException : The requir
 
 #### No JSON API Key Parameter Set
 
-Expected Exception
-
 ```bash
 Exception : You must specify either the file_path or json_key in the connection_config array.
 ```
 
 #### Invalid JSON API Key
 
-Expected Exception
-
 ```bash
 Exception : Google SDK Authentication Error. Invalid JWT Signature.
 ```
 
 #### Invalid or Mismatched API Scopes
-
-Expected Exception
 
 ```bash
 Exception : Invalid OAuth scope or ID token audience provided.
