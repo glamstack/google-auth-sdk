@@ -67,11 +67,10 @@ class AuthClient
      */
     protected function verifyJsonKeyConfig(): void
     {
-//        dd($this->connection_config);
         if (
             !array_key_exists('json_key_file_path', $this->connection_config) &&
-            !array_key_exists('json_key', $this->connection_config)) {
-//            dd('error?');
+            !array_key_exists('json_key', $this->connection_config)
+        ) {
             throw new Exception('You must specify either the json_key_file_path or json_key in the connection_config array.');
         }
     }
@@ -91,7 +90,7 @@ class AuthClient
         $json_key_string = $this->getJsonKeyString();
 
         // Parse the JSON and return an object
-        $json_key = $this->setKeyContents($json_key_string, $file_path);
+        $json_key = $this->getKeyContents($json_key_string, $file_path);
 
         // Set the class api_scopes variable
         $api_scopes = $this->getApiScopes();
@@ -168,7 +167,7 @@ class AuthClient
     /**
      * Determine rather to use the `json_key` or `file_path`
      *
-     * This will set the JSON key used for authentication
+     * This will return the JSON key used for authentication
      *
      * @param string|null $json_key_string
      *      A Google JSON key formatted string to use for Google OAuth
@@ -178,7 +177,7 @@ class AuthClient
      *
      * @return object
      */
-    protected function setKeyContents(?string $json_key_string, ?string $file_path): object
+    protected function getKeyContents(?string $json_key_string, ?string $file_path): object
     {
         if ($json_key_string != null) {
             return (object)json_decode($json_key_string);
