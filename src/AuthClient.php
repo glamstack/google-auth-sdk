@@ -2,16 +2,12 @@
 
 namespace Glamstack\GoogleAuth;
 
-use Glamstack\GoogleAuth\Traits\ResponseLog;
-use Illuminate\Http\Client\Response;
+use Glamstack\GoogleAuth\Models\AuthClientModel;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use Exception;
 
 class AuthClient
 {
-    use ResponseLog;
-
     // Standard parameters for building JWT request with Google OAuth Server.
     // They are put here for easy changing if necessary
     const AUTH_BASE_URL = 'https://oauth2.googleapis.com/token';
@@ -20,15 +16,8 @@ class AuthClient
     const AUTH_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
     const ENCRYPT_METHOD = 'sha256';
 
-    private string $access_token;
-    private string $api_scopes;
-    private string $client_email;
     private array $connection_config;
-    private string $connection_key;
-    private string $file_path;
-    private string $jwt;
-    private string $private_key;
-    private string $subject_email;
+    private AuthClientModel $auth_model;
 
     /**
      * This function takes care of configuring the JWT that is used for the
@@ -36,228 +25,237 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account
      *
-     * @param string $connection_key (Optional) The connection key to use from
-     * the configuration file to set the appropriate Google Auth Settings.
-     * Default: `workspace`
-     *
-     * @param array $api_scopes (Optional) The Google API Scopes that will be
-     * used with the token
-     *
-     * @param string $file_path (Optional) The file path of the Google JSON key
-     * used for Service Account authentication. This parameter should only be
-     * used if you are storing your JSON key outside of the
-     * `storage/keys/glamstack-google/` directory of your application
+     * @param array $connection_config
+     *      The connection configuration to use for Google OAuth
+     * @throws Exception
      */
     public function __construct(
-        string $connection_key = null,
-        array $api_scopes = [],
-        string $file_path = null
-    ) {
-        // Set the class connection_key variable.
-        $this->setConnectionKey($connection_key);
-
-        // Set the class connection_configuration variable
-        $this->setConnectionConfig();
-
-        // Set the class api_scopes variable.
-        $this->setApiScopes($api_scopes);
-
-        // Set the class file_path variable
-        $this->setFilePath($file_path);
-
-        // Get the file contents from the Google JSON key
-        $file_contents = $this->parseJsonFile($this->file_path);
-
-        // Set the Google Authorization Parameters from the $file_contents
-        $this->setAuthParameters($file_contents);
-
-        // Set the Google Subject email
-        $this->setSubjectEmail();
-
-        // Create the encrypted JWT Headers
-        $jwt_headers = $this->createJwtHeader();
-
-        // Create the encrypted JWT Claim
-        $jwt_claim = $this->createJwtClaim();
-
-        // Create the signature to append to the JWT
-        $signature = $this->createSignature($jwt_headers, $jwt_claim);
-
-        // Set the class jwt variable to the Google OAuth2 required string
-        $this->jwt = $jwt_headers.'.'.$jwt_claim.'.'.$signature;
-    }
-
-    /**
-     * Set the connection_key class variable. The connection_key variable by default
-     * will be set to `workspace`. This can be overridden when initializing the
-     * SDK with a different connection key which is passed into this function to
-     * set the class variable to the provided key.
-     *
-     * @param string $connection_key (Optional) The connection key to use from the
-     * configuration file.
-     *
-     * @return void
-     */
-    protected function setConnectionKey(?string $connection_key) : void
+        array $connection_config = []
+    )
     {
-        if ($connection_key == null) {
-            /** @phpstan-ignore-next-line */
-            $this->connection_key = config('glamstack-google.auth.default_connection');
-        } else {
-            $this->connection_key = $connection_key;
-        }
+        // Create a new AuthClientModel
+        $this->auth_model = new AuthClientModel();
+
+        // Utilize the model to ensure we have the proper inputs
+        $this->auth_model->verifyConstructor($connection_config);
+
+        // Set the `connection_config` class variable
+        $this->setConnectionConfig($connection_config);
+
+        // Verify that either a `file_path` or `json_key` has been provided
+        $this->verifyJsonKeyConfig();
     }
 
     /**
      * Set the connection_config class property array
      *
-     * Define an array in the class using the connection configuration in the
-     * glamstack-google.php connections array. If connection key is not specified,
-     * an error log will be created and a 501 abort error will be thrown.
+     * @param array $connection_configuration
+     *      Connection configuration array provided during initialization
      *
      * @return void
      */
-    protected function setConnectionConfig(): void
+    protected function setConnectionConfig(array $connection_configuration): void
     {
-        if (array_key_exists($this->connection_key, config('glamstack-google.connections'))) {
-            $this->connection_config = config('glamstack-google.connections.' . $this->connection_key);
-        } else {
-            $error_message = 'The Google connection key is not defined in ' .
-                '`config/glamstack-google.php` connections array. Without this ' .
-                'array config, there is no API configuration to connect with.';
+        $this->connection_config = $connection_configuration;
+    }
 
-            Log::stack((array) config('glamstack-google.auth.log_channels'))
-                ->critical($error_message, [
-                    'event_type' => 'google-api-config-missing-error',
-                    'class' => get_class(),
-                    'status_code' => '501',
-                    'message' => $error_message,
-                    'connection_key' => $this->connection_key,
-                ]);
-
-            abort(501, $error_message);
+    /**
+     * Verify that at either `file_path` or `json_key` is set
+     *
+     * @return void
+     * @throws Exception
+     */
+    protected function verifyJsonKeyConfig(): void
+    {
+        if (
+            !array_key_exists('json_key_file_path', $this->connection_config) &&
+            !array_key_exists('json_key', $this->connection_config)
+        ) {
+            throw new Exception('You must specify either the json_key_file_path or json_key in the connection_config array.');
         }
     }
 
     /**
-     * Set the API scopes for the Google Authentication API token. The scope
-     * will default to the configuration file for the connection, and can be
-     * overridden with the $api_scopes variable being set during initialization.
+     * Send authentication request to the Google OAuth2 Server
      *
-     * @param ?array $api_scopes (Optional) API Scopes to be set. This will
-     * override the configuration file API Scope settings.
-     *
-     * @return void
+     * @return string
+     * @throws Exception
      */
-    protected function setApiScopes(?array $api_scopes) : void
+    public function authenticate(): string
     {
-        if (!$api_scopes) {
-            $this->api_scopes = collect($this->connection_config['api_scopes'])
-                ->implode(' ');
-        } else {
-            $this->api_scopes = collect($api_scopes)->implode(' ');
+        // Get the file path loaded into the construct method
+        $file_path = $this->getFilePath();
+
+        // Get the JSON key string loaded into the construct method
+        $json_key_string = $this->getJsonKeyString();
+
+        // Parse the JSON and return an object
+        $json_key = $this->getKeyContents($json_key_string, $file_path);
+
+        // Set the class api_scopes variable
+        $api_scopes = $this->getApiScopes();
+
+        // Set the Google Subject email
+        $subject_email = $this->getSubjectEmail();
+
+        // Set the Google Client email
+        $client_email = $this->getClientEmail($json_key);
+
+        // Set the private key to use for authentication
+        $private_key = $this->getPrivateKey($json_key);
+
+        // If subject email is not supplied set the subject_email to the client_email
+        if (!$subject_email) {
+            $subject_email = $client_email;
         }
 
-        // If api_scopes array is empty, create a log entry and abort
-        if (count(explode(" ", $this->api_scopes)) == 0) {
-            $error_message = 'The Google API scopes array is empty in ' .
-                '`config/glamstack-google.php` connections array. Without this ' .
-                'array config, there are no valid scopes for making API calls ' .
-                'to endpoints.';
+        // Create the encrypted JWT Headers
+        $jwt_headers = $this->createJwtHeader();
 
-            Log::stack((array) config('glamstack-google.auth.log_channels'))
-                ->critical($error_message, [
-                    'event_type' => 'google-api-config-missing-error',
-                    'class' => get_class(),
-                    'status_code' => '501',
-                    'message' => $error_message,
-                    'connection_key' => $this->connection_key,
-                ]);
+        // Create the encrypted JWT Claim
+        $jwt_claim = $this->createJwtClaim($client_email, $api_scopes, $subject_email);
 
-            abort(501, $error_message);
+        // Create the signature to append to the JWT
+        $signature = $this->createSignature($jwt_headers, $jwt_claim, $private_key);
+
+        // Set the class jwt variable to the Google OAuth2 required string
+        $jwt = $jwt_headers . '.' . $jwt_claim . '.' . $signature;
+
+        // Send the authentication request with the `jwt` and return the
+        // access_token from the response
+        $response = $this->sendAuthRequest($jwt);
+
+        if(property_exists($response->object, 'access_token')){
+            return $response->object->access_token;
+        } else {
+            throw new Exception('Google OAuth2 Authentication Failed', 500);
         }
     }
 
     /**
-     * Set the class variable $file_path to either the provided $connection_key
-     * configuration or the $file_path provided from class initialization.
+     * Get the file path from the construct array
      *
-     * @param ?string $file_path The file path to set for the Google JSON token
+     * Will return null if the `file_path` key is not set
      *
-     * @return void
+     * @return string|null
      */
-    protected function setFilePath(?string $file_path)
+    protected function getFilePath(): string|null
     {
-        if ($file_path == null) {
-            $this->file_path = storage_path(
-                'keys/glamstack-google/'. $this->connection_key . '.json'
-            );
+        if (array_key_exists('json_key_file_path', $this->connection_config)) {
+            return $this->connection_config['json_key_file_path'];
         } else {
-            $this->file_path = $file_path;
+            return null;
         }
+    }
 
-        // If file does not exist, create a log entry and abort
-        if (file_exists($this->file_path) == false) {
-            $error_message = 'The Google JSON API key for the connection key ' .
-            'cannot be found in `storage/keys/glamstack-google/{key}.json`';
+    /**
+     * Get the JSON key from the construct array
+     *
+     * Will return null if the 'json_key' key is not set
+     *
+     * @return string|null
+     */
+    protected function getJsonKeyString(): string|null
+    {
+        if (array_key_exists('json_key', $this->connection_config)) {
+            return $this->connection_config['json_key'];
+        } else {
+            return null;
+        }
+    }
 
-            Log::stack((array) config('glamstack-google.auth.log_channels'))
-                ->critical($error_message, [
-                    'event_type' => 'google-api-key-missing-error',
-                    'class' => get_class(),
-                    'status_code' => '501',
-                    'message' => $error_message,
-                    'connection_key' => $this->connection_key,
-                ]);
-
-            abort(501, $error_message);
+    /**
+     * Determine rather to use the `json_key` or `file_path`
+     *
+     * This will return the JSON key used for authentication
+     *
+     * @param string|null $json_key_string
+     *      A Google JSON key formatted string to use for Google OAuth
+     *
+     * @param string|null $file_path
+     *      The file path to the JSON key to use for Google OAuth
+     *
+     * @return object
+     */
+    protected function getKeyContents(?string $json_key_string, ?string $file_path): object
+    {
+        if ($json_key_string != null) {
+            return (object)json_decode($json_key_string);
+        } else {
+            return $this->parseJsonFile($file_path);
         }
     }
 
     /**
      * Parse the Google JSON key
      *
-     * @param string $file_path The file path of the Google JSON key
+     * @param string $file_path
+     *      The file path of the Google JSON key
      *
      * @return object
      */
-    protected function parseJsonFile(string $file_path) : object
+    protected function parseJsonFile(string $file_path): object
     {
-        $file_contents = (object) json_decode(
-            (string) file_get_contents($file_path)
+        return (object)json_decode(
+            (string)file_get_contents($file_path)
         );
-        return $file_contents;
     }
 
     /**
-     * Utilize the Google JSON key contents to set the class variables
-     * `private_key` and `client_email`
+     * Set the API scopes for the Google Authentication API token.
      *
-     * @param object $json_file_contents The json_decoded Google JSON key token
+     * The return is space seperated string
      *
-     * @return void
+     * @return string
      */
-    protected function setAuthParameters(object $json_file_contents) : void
+    protected function getApiScopes(): string
     {
-        $this->private_key = $json_file_contents->private_key;
-        $this->client_email = $json_file_contents->client_email;
+        return collect($this->connection_config['api_scopes'])
+            ->implode(' ');
     }
 
     /**
-     * Check if the 'GOOGLE_SUBJECT_EMAIL' variable is set in `.env`. If it is
-     * set the class variable `subject_email` to the environment variable.
-     * If it is not set we will use the client_email from the JSON token.
+     * Get the Google Subject Email if key exists in construct
      *
-     * @return void
+     * This will return null if the `subject_email` key is not used
+     *
+     * @return string | null
      */
-    protected function setSubjectEmail() : void
+    protected function getSubjectEmail(): string|null
     {
-        if ($this->connection_config['email'] != null) {
-            /** @phpstan-ignore-next-line */
-            $this->subject_email = $this->connection_config['email'];
+        if (array_key_exists('subject_email', $this->connection_config)) {
+            return $this->connection_config['subject_email'];
         } else {
-            $this->subject_email = $this->client_email;
+            return null;
         }
+    }
+
+    /**
+     * Get the `client_email` from the Google JSON key
+     *
+     * @param object $json_file_contents
+     *      The json_decoded Google JSON key token
+     *
+     * @return string
+     */
+    protected function getClientEmail(object $json_file_contents): string
+    {
+        return $json_file_contents->client_email;
+    }
+
+    /**
+     * Set the `private_key` and `client_email` class variables
+     *
+     * Utilizes the JSON file contents to fetch the information.
+     *
+     * @param object $json_file_contents
+     *      The json_decoded Google JSON key token
+     *
+     * @return string
+     */
+    protected function getPrivateKey(object $json_file_contents): string
+    {
+        return $json_file_contents->private_key;
     }
 
     /**
@@ -268,16 +266,31 @@ class AuthClient
      *
      * @return string
      */
-    protected function createJwtHeader()
+    protected function createJwtHeader(): string
     {
         $jwt_header = [
             'alg' => self::AUTH_ALGORITHM,
             'typ' => self::AUTH_TYPE,
         ];
         $encoded_jwt_header = $this->base64_url_encode(
-            (string) json_encode($jwt_header)
+            (string)json_encode($jwt_header)
         );
         return $encoded_jwt_header;
+    }
+
+    /**
+     * Encoding schema utilized by Google OAuth2 Servers
+     *
+     * @see https://stackoverflow.com/a/65893524
+     *
+     * @param string $input
+     *      The input string to encode
+     *
+     * @return string
+     */
+    protected function base64_url_encode(string $input): string
+    {
+        return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
     }
 
     /**
@@ -286,20 +299,29 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account#:~:text=Forming%20the%20JWT%20claim%20set
      *
+     * @param string $client_email
+     *      The `client_email` from the Google JSON key
+     *
+     * @param string $parsed_api_scopes
+     *      The `api_scopes` from the construct method
+     *
+     * @param string $subject_email
+     *      The `subject_email` to use for authentication
+     *
      * @return string
      */
-    protected function createJwtClaim()
+    protected function createJwtClaim(string $client_email, string $parsed_api_scopes, string $subject_email): string
     {
         $jwt_claim = [
-            'iss' => $this->client_email,
-            'scope' => $this->api_scopes,
+            'iss' => $client_email,
+            'scope' => $parsed_api_scopes,
             'aud' => self::AUTH_BASE_URL,
-            'exp' => time()+3600,
+            'exp' => time() + 3600,
             'iat' => time(),
-            'sub' => $this->subject_email
+            'sub' => $subject_email
         ];
         $encoded_jwt_claim = $this->base64_url_encode(
-            (string) json_encode($jwt_claim)
+            (string)json_encode($jwt_claim)
         );
         return $encoded_jwt_claim;
     }
@@ -314,47 +336,35 @@ class AuthClient
      *
      * @see https://www.php.net/manual/en/function.openssl-pkey-get-private.php
      *
-     * @param string $jwt_header The JWT Header string required for Google
-     * OAuth2 authentication
+     * @param string $jwt_header
+     *      The JWT Header string required for Google OAuth2 authentication
      *
-     * @param string $jwt_claim The JWT Claim string required for Google OAuth2
-     * authentication
+     * @param string $jwt_claim
+     *      The JWT Claim string required for Google OAuth2 authentication
+     *
+     * @param string $private_key
+     *      The Google JSON key `private_key` value
      *
      * @return string
      */
-    protected function createSignature(string $jwt_header, string $jwt_claim) : string
+    protected function createSignature(string $jwt_header, string $jwt_claim, string $private_key): string
     {
         // Parse the private key and prepare it for use
-        $key_id = openssl_pkey_get_private($this->private_key);
+        $key_id = openssl_pkey_get_private($private_key);
 
         // Create the open SSL Signature using the provided inputs and
         // encryption method
         openssl_sign(
-            $jwt_header.'.'.$jwt_claim,
-            $this->private_key,
-            /** @phpstan-ignore-next-line */
+            $jwt_header . '.' . $jwt_claim,
+            $private_key,
             $key_id,
             self::ENCRYPT_METHOD
         );
 
         // Encode the private key
-        $encoded_signature = $this->base64_url_encode($this->private_key);
+        $encoded_signature = $this->base64_url_encode($private_key);
 
         return $encoded_signature;
-    }
-
-    /**
-     * Encoding schema utilized by Google OAuth2 Servers
-     *
-     * @see https://stackoverflow.com/a/65893524
-     *
-     * @param string $input The input string to encode
-     *
-     * @return string
-     */
-    protected function base64_url_encode(string $input) : string
-    {
-        return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
     }
 
     /**
@@ -362,28 +372,31 @@ class AuthClient
      *
      * @see https://developers.google.com/identity/protocols/oauth2/service-account#:~:text=Making%20the%20access%20token%20request
      *
-     * $return object
+     * @param string $jwt
+     *      The JWT to use for authentication
+     *
+     * @return object
      */
-    protected function sendAuthRequest() : object
+    protected function sendAuthRequest(string $jwt): object
     {
         $request = Http::asForm()->post(
             self::AUTH_BASE_URL,
             [
                 'grant_type' => self::AUTH_GRANT_TYPE,
-                'assertion' => $this->jwt
+                'assertion' => $jwt
             ]
         );
 
         $response = $this->parseApiResponse($request);
 
-        $this->logResponse('post', self::AUTH_BASE_URL, $response);
-
         // If response was not successful, parse Google API response
-        if ($response->status->successful == false) {
+        if (!$response->status->successful) {
             if (property_exists($response->object, 'error')) {
-                abort($response->status->code, 'Google SDK Authentication Error. ' . $response->object->error_description);
+                //TODO: Return an exception
+                throw new Exception('Google SDK Authentication Error. ' . $response->object->error_description, $response->status->code );
             } else {
-                abort(500, 'The Google SDK authentication attempt failed due to an unknown reason in the sendAuthRequest method.');
+                //TODO: return an exception
+                throw new Exception('The Google SDK authentication attempt failed due to an unknown reason in the sendAuthRequest method.', 500);
             }
         }
 
@@ -391,14 +404,49 @@ class AuthClient
     }
 
     /**
-     * Send authentication request to the Google OAuth2 Server
+     * Parse the API response and return custom formatted response for consistency
      *
-     * @return string
+     * @see https://laravel.com/docs/8.x/http-client#making-requests
+     *
+     * @param object $response Response object from API results
+     *
+     * @return object Custom response returned for consistency
+     *  {
+     *    +"headers": [
+     *      "Date" => "Fri, 12 Nov 2021 20:13:55 GMT",
+     *      "Content-Type" => "application/json",
+     *      "Content-Length" => "1623",
+     *      "Connection" => "keep-alive"
+     *    ],
+     *    +"json": "{"id":12345678}"
+     *    +"object": {
+     *      +"id": 12345678
+     *    }
+     *    +"status": {
+     *      +"code": 200
+     *      +"ok": true
+     *      +"successful": true
+     *      +"failed": false
+     *      +"serverError": false
+     *      +"clientError": false
+     *   }
+     * }
      */
-    public function authenticate()
+    protected function parseApiResponse(object $response): object
     {
-        $this->access_token = $this->sendAuthRequest()->object->access_token;
-        return $this->access_token;
+        return (object)[
+            'headers' => $this->convertHeadersToArray($response->headers()),
+            'json' => json_encode($response->json()),
+            'object' => $response->object(),
+            'status' => (object)[
+                'code' => $response->status(),
+                'ok' => $response->ok(),
+                'successful' => $response->successful(),
+                'failed' => $response->failed(),
+                'serverError' => $response->serverError(),
+                'clientError' => $response->clientError(),
+            ],
+        ];
     }
 
     /**
@@ -454,7 +502,7 @@ class AuthClient
      *     "set-cookie" => (truncated)
      * ]
      */
-    public function convertHeadersToArray(array $header_response): array
+    protected function convertHeadersToArray(array $header_response): array
     {
         $headers = [];
 
@@ -463,58 +511,12 @@ class AuthClient
             if (count($header_value) > 1) {
                 $headers[$header_key] = $header_value;
 
-            // If array has a single key, convert to a string
+                // If array has a single key, convert to a string
             } else {
                 $headers[$header_key] = $header_value[0];
             }
         }
 
         return $headers;
-    }
-
-    /**
-     * Parse the API response and return custom formatted response for consistency
-     *
-     * @see https://laravel.com/docs/8.x/http-client#making-requests
-     *
-     * @param object $response Response object from API results
-     *
-     * @return object Custom response returned for consistency
-     *  {
-     *    +"headers": [
-     *      "Date" => "Fri, 12 Nov 2021 20:13:55 GMT",
-     *      "Content-Type" => "application/json",
-     *      "Content-Length" => "1623",
-     *      "Connection" => "keep-alive"
-     *    ],
-     *    +"json": "{"id":12345678}"
-     *    +"object": {
-     *      +"id": 12345678
-     *    }
-     *    +"status": {
-     *      +"code": 200
-     *      +"ok": true
-     *      +"successful": true
-     *      +"failed": false
-     *      +"serverError": false
-     *      +"clientError": false
-     *   }
-     * }
-     */
-    public function parseApiResponse(object $response): object
-    {
-        return (object) [
-            'headers' => $this->convertHeadersToArray($response->headers()),
-            'json' => json_encode($response->json()),
-            'object' => $response->object(),
-            'status' => (object) [
-                'code' => $response->status(),
-                'ok' => $response->ok(),
-                'successful' => $response->successful(),
-                'failed' => $response->failed(),
-                'serverError' => $response->serverError(),
-                'clientError' => $response->clientError(),
-            ],
-        ];
     }
 }

@@ -1,6 +1,17 @@
 {
     "name": "glamstack/google-auth-sdk",
     "description": "Google Auth API SDK for Laravel",
+    "keywords": [
+        "Glamstack",
+        "authentication",
+        "authclient",
+        "google-auth",
+        "google",
+        "auth",
+        "laravel",
+        "apiclient"
+    ],
+    "license": "Apache-2.0",
     "authors": [
         {
             "name": "Dillon Wheeler",
@@ -15,15 +26,25 @@
     ],
     "require": {
         "php": ">=8.0",
-        "laravel/framework": ">=8.0"
+        "spatie/laravel-package-tools": "^1.11",
+        "symfony/options-resolver": "^6.0",
+        "guzzlehttp/guzzle": "^7.4",
+        "ext-openssl": "*"
     },
     "require-dev": {
         "nunomaduro/larastan": "^1.0",
-        "orchestra/testbench": "^6.23"
+        "orchestra/testbench": "^7.4",
+        "pestphp/pest": "^1.21",
+        "pestphp/pest-plugin-laravel": "^1.2"
     },
     "autoload": {
         "psr-4": {
             "Glamstack\\GoogleAuth\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Glamstack\\GoogleAuth\\Tests\\": "tests/"
         }
     },
     "extra": {
@@ -31,6 +52,11 @@
            "providers": [
                 "Glamstack\\GoogleAuth\\GoogleAuthServiceProvider"
             ]
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
         }
     }
 }

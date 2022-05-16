@@ -69,15 +69,6 @@ composer require glamstack/google-auth-sdk
 #  - Installing glamstack/google-auth-sdk (dev-1-add-package-scaffolding): Symlinking from packages/glamstack/google-auth-sdk
 ```
 
-### Validation and Config Copy
-
-```bash
-php artisan vendor:publish --tag=glamstack-google-config
-
-# Copied File [/Users/jmartin/Sites/gitlab-sdk/src/Config/glamstack-google-config.php] To [/config/glamstack-google-config.php]
-# Publishing complete.
-```
-
 ### Caching Problems
 
 If you run into any classes or files that are renamed and are throwing `Not Found` errors, you may need to use the `composer dump-autoload` command.
