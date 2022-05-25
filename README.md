@@ -175,7 +175,7 @@ We recommend always using a specific version in your `composer.json` file and re
 
 
 ```bash
-composer require glamstack/google-auth-sdk:2.5.18
+composer require glamstack/google-auth-sdk:2.5.25
 ```
 
 > If you are contributing to this package, see [CONTRIBUTING](CONTRIBUTING.md) for instructions on configuring a local composer package with symlinks.
