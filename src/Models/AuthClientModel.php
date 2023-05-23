@@ -49,7 +49,7 @@ class AuthClientModel
         $resolver->define('subject_email')
             ->allowedTypes('string', 'null')
             ->default(null)
-            ->info('The email address of the user for which the application is requesting delegated access. Only used for Google Workspace SDK');
+            ->info('The email address of the user for which the application is requesting delegated access. Only used for Google Workspace SDK'); // phpcs:ignore
 
         $resolver->define('json_key_file_path')
             ->allowedTypes('string', 'null')

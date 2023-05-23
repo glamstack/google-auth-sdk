@@ -70,7 +70,8 @@ class AuthClient
             !array_key_exists('json_key_file_path', $this->connection_config) &&
             !array_key_exists('json_key', $this->connection_config)
         ) {
-            throw new Exception('You must specify either the json_key_file_path or json_key in the connection_config array.');
+            $message = 'You must specify either the json_key_file_path or json_key in the connection_config array.';
+            throw new Exception($message);
         }
     }
 
@@ -271,7 +272,7 @@ class AuthClient
             'alg' => self::AUTH_ALGORITHM,
             'typ' => self::AUTH_TYPE,
         ];
-        $encoded_jwt_header = $this->base64_url_encode(
+        $encoded_jwt_header = $this->base64UrlEncode(
             (string)json_encode($jwt_header)
         );
         return $encoded_jwt_header;
@@ -287,7 +288,7 @@ class AuthClient
      *
      * @return string
      */
-    protected function base64_url_encode(string $input): string
+    protected function base64UrlEncode(string $input): string
     {
         return str_replace('=', '', strtr(base64_encode($input), '+/', '-_'));
     }
@@ -319,7 +320,7 @@ class AuthClient
             'iat' => time(),
             'sub' => $subject_email
         ];
-        $encoded_jwt_claim = $this->base64_url_encode(
+        $encoded_jwt_claim = $this->base64UrlEncode(
             (string)json_encode($jwt_claim)
         );
         return $encoded_jwt_claim;
@@ -361,7 +362,7 @@ class AuthClient
         );
 
         // Encode the private key
-        $encoded_signature = $this->base64_url_encode($private_key);
+        $encoded_signature = $this->base64UrlEncode($private_key);
 
         return $encoded_signature;
     }
@@ -392,10 +393,15 @@ class AuthClient
         if (!$response->status->successful) {
             if (property_exists($response->object, 'error')) {
                 //TODO: Return an exception
-                throw new Exception('Google SDK Authentication Error. ' . $response->object->error_description, $response->status->code);
+                throw new Exception(
+                    'Google SDK Authentication Error. ' . $response->object->error_description,
+                    $response->status->code
+                );
             } else {
                 //TODO: return an exception
-                throw new Exception('The Google SDK authentication attempt failed due to an unknown reason in the sendAuthRequest method.', 500);
+                $message = 'The Google SDK authentication attempt failed due to an unknown reason in the ' .
+                    'sendAuthRequest method.';
+                throw new Exception($message, 500);
             }
         }
 
