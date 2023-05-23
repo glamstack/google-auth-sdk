@@ -8,7 +8,8 @@ class AuthClientModel
 {
     private OptionsResolver $resolver;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->resolver = new OptionsResolver();
     }
 
