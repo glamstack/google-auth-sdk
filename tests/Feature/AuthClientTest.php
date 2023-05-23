@@ -2,7 +2,7 @@
 
 namespace Feature;
 
-use Glamstack\GoogleAuth\AuthClient;
+use Gitlabit\GoogleAuth\AuthClient;
 
 it('can authenticate with Google OAuth Server via json file', function(){
     $string_key_connection_config = [

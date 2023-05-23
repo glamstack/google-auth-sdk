@@ -2,8 +2,7 @@
 
 namespace Tests;
 
-
-use Glamstack\GoogleAuth\Tests\TestCase;
+use Gitlabit\GoogleAuth\Tests\TestCase;
 
 uses(TestCase::class)
     ->in('Unit', 'Feature');

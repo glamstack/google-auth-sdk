@@ -2,7 +2,7 @@
 
 namespace Unit;
 
-use Glamstack\GoogleAuth\Tests\Fakes\AuthClientFake;
+use Gitlabit\GoogleAuth\Tests\Fakes\AuthClientFake;
 
 it('will throw exception if missing required parameter', function(){
     $client = new AuthClientFake([

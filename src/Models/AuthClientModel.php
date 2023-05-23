@@ -1,6 +1,6 @@
 <?php
 
-namespace Glamstack\GoogleAuth\Models;
+namespace Gitlabit\GoogleAuth\Models;
 
 use Symfony\Component\OptionsResolver\OptionsResolver;
 

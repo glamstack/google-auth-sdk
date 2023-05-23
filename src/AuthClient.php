@@ -1,8 +1,8 @@
 <?php
 
-namespace Glamstack\GoogleAuth;
+namespace Gitlabit\GoogleAuth;
 
-use Glamstack\GoogleAuth\Models\AuthClientModel;
+use Gitlabit\GoogleAuth\Models\AuthClientModel;
 use Illuminate\Support\Facades\Http;
 use Exception;
 
