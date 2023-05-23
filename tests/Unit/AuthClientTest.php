@@ -2,11 +2,11 @@
 
 namespace Unit;
 
-use Glamstack\GoogleAuth\Tests\Fakes\AuthClientFake;
+use Gitlabit\GoogleAuth\Tests\Fakes\AuthClientFake;
 
-it('will throw exception if missing required parameter', function(){
+it('will throw exception if missing required parameter', function () {
     $client = new AuthClientFake([
-       'json_key_file_path' => 'tests/fakes/fake_key_file.json'
+        'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ]);
 })->expectExceptionMessage('The required option "api_scopes" is missing.');
 
@@ -14,14 +14,14 @@ it('will throw exception if missing required parameter', function(){
  * Testing the validation will throw exception if there is not a json key
  * provided
  */
-it('will throw exception if file_path or json_key is not set', function(){
-   $client = new AuthClientFake([
-       'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite'],
-       'subject_email' => 'example@example.com'
-   ]);
+it('will throw exception if file_path or json_key is not set', function () {
+    $client = new AuthClientFake([
+        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite'],
+        'subject_email' => 'example@example.com'
+    ]);
 })->expectExceptionMessage('You must specify either the json_key_file_path or json_key in the connection_config array.');
 
-it('get a file path if provided', function() {
+it('get a file path if provided', function () {
     $file_path_connection_config = [
         'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite'],
         'subject_email' => 'example@example.com',
@@ -32,7 +32,7 @@ it('get a file path if provided', function() {
     expect($file_path)->toBe('testing_file_path/key.json');
 });
 
-it('get json key string from construct', function(){
+it('get json key string from construct', function () {
     $json_string = '{
         "type": "service_account",
         "project_id": "project_id",
@@ -56,10 +56,12 @@ it('get json key string from construct', function(){
     expect($file_path)->toBe($json_string);
 });
 
-it('can get API scopes', function(){
+it('can get API scopes', function () {
     $file_path_connection_config = [
-        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            'https://www.googleapis.com/auth/cloud-platform'],
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ],
         'subject_email' => 'example@example.com',
         'json_key_file_path' => 'testing_file_path/key.json'
     ];
@@ -68,10 +70,12 @@ it('can get API scopes', function(){
     expect($api_scopes)->toBe('https://www.googleapis.com/auth/ndev.clouddns.readwrite https://www.googleapis.com/auth/cloud-platform');
 });
 
-it('can parse json file properly', function(){
+it('can parse json file properly', function () {
     $file_path_connection_config = [
-        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            'https://www.googleapis.com/auth/cloud-platform'],
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ],
         'subject_email' => 'example@example.com',
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
@@ -88,10 +92,12 @@ it('can parse json file properly', function(){
     expect($file_contents->client_x509_cert_url)->toBe('fake_client_cert');
 });
 
-it('can get private key from json file', function(){
+it('can get private key from json file', function () {
     $file_path_connection_config = [
-        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            'https://www.googleapis.com/auth/cloud-platform'],
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ],
         'subject_email' => 'example@example.com',
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
@@ -101,10 +107,12 @@ it('can get private key from json file', function(){
     expect($private_key)->toBe('key_data');
 });
 
-it('can get client email from json file', function(){
+it('can get client email from json file', function () {
     $file_path_connection_config = [
-        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            'https://www.googleapis.com/auth/cloud-platform'],
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ],
         'subject_email' => 'example@example.com',
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
@@ -114,10 +122,12 @@ it('can get client email from json file', function(){
     expect($client_email)->toBe('example@example.iam.gserviceaccount.com');
 });
 
-it('can get subject email from the connection config array', function(){
+it('can get subject email from the connection config array', function () {
     $file_path_connection_config = [
-        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            'https://www.googleapis.com/auth/cloud-platform'],
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ],
         'subject_email' => 'example@example.com',
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
@@ -126,10 +136,12 @@ it('can get subject email from the connection config array', function(){
     expect($subject_email)->toBe('example@example.com');
 });
 
-it('will return null for subject email if one is not provided', function(){
+it('will return null for subject email if one is not provided', function () {
     $file_path_connection_config = [
-        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            'https://www.googleapis.com/auth/cloud-platform'],
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ],
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
     $client = new AuthClientFake($file_path_connection_config);
@@ -137,10 +149,12 @@ it('will return null for subject email if one is not provided', function(){
     expect($subject_email)->toBeNull();
 });
 
-it('can create a jwt header', function(){
+it('can create a jwt header', function () {
     $file_path_connection_config = [
-        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            'https://www.googleapis.com/auth/cloud-platform'],
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ],
         'subject_email' => 'example@example.com',
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
@@ -149,10 +163,12 @@ it('can create a jwt header', function(){
     expect($encoded_jwt_header)->toBe('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9');
 });
 
-it('can create JWT Claim', function(){
+it('can create JWT Claim', function () {
     $file_path_connection_config = [
-        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            'https://www.googleapis.com/auth/cloud-platform'],
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ],
         'subject_email' => 'example@example.com',
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
@@ -166,26 +182,30 @@ it('can create JWT Claim', function(){
     expect($jwt_claim)->toStartWith('eyJpc3MiOiJleGF');
 });
 
-it('can base64 encode an input', function(){
+it('can base64 encode an input', function () {
     $file_path_connection_config = [
-        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            'https://www.googleapis.com/auth/cloud-platform'],
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ],
         'subject_email' => 'example@example.com',
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
     $client = new AuthClientFake($file_path_connection_config);
-   $encoded_string = $client->base64_url_encode('testing_input');
-   expect($encoded_string)->toBe('dGVzdGluZ19pbnB1dA');
+    $encoded_string = $client->base64_url_encode('testing_input');
+    expect($encoded_string)->toBe('dGVzdGluZ19pbnB1dA');
 });
 
 //it('can send auth request', function(){
 //    //TODO: add unit test for sending auth request
 //});
 
-it('can convert headers to array', function(){
+it('can convert headers to array', function () {
     $file_path_connection_config = [
-        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            'https://www.googleapis.com/auth/cloud-platform'],
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ],
         'subject_email' => 'example@example.com',
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
@@ -208,10 +228,12 @@ it('can convert headers to array', function(){
     expect($headers_array['Transfer-Encoding'])->toBe('chunked');
 });
 
-it('can set key contents from file', function(){
+it('can set key contents from file', function () {
     $file_path_connection_config = [
-        'api_scopes' => ['https://www.googleapis.com/auth/ndev.clouddns.readwrite',
-            'https://www.googleapis.com/auth/cloud-platform'],
+        'api_scopes' => [
+            'https://www.googleapis.com/auth/ndev.clouddns.readwrite',
+            'https://www.googleapis.com/auth/cloud-platform'
+        ],
         'subject_email' => 'example@example.com',
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
@@ -228,7 +250,7 @@ it('can set key contents from file', function(){
     expect($file_contents->client_x509_cert_url)->toBe('fake_client_cert');
 });
 
-it('can set key contents from string json', function(){
+it('can set key contents from string json', function () {
     //TODO: Update this to be more realistic
     $json_string = '{
         "type": "service_account",

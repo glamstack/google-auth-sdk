@@ -2,13 +2,32 @@
 
 ## Overview
 
-The Google Auth SDK is an open source [Composer](https://getcomposer.org/) package created by [GitLab IT Engineering](https://about.gitlab.com/handbook/business-technology/engineering/) for use in the [GitLab Access Manager](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager) Laravel application for connecting to Google API endpoints for provisioning and deprovisioning of users, groups, group membership, and other related functionality.
+The Google Auth SDK is an open source [Composer](https://getcomposer.org/) package created by [GitLab IT Engineering](https://about.gitlab.com/handbook/it/engineering/dev/) for use in internal Laravel applications for generating API tokens using Google JSON credentials that can be use for REST API endpoints when using the related `gitlab-it/google-*` SDK packages for each respective Google service.
 
-> **Disclaimer:** This is not an official package maintained by the Google or GitLab product and development teams. This is an internal tool that we use in the GitLab IT department that we have open sourced as part of our company values.
+> **Disclaimer:** This is not an official package maintained by the GitLab or Google product and development teams. This is an internal tool that we use in the GitLab IT department that we have open sourced as part of our company values.
 >
-> Please use at your own risk and create issues for any bugs that you encounter.
+> Please use at your own risk and create merge requests for any bugs that you encounter.
 >
 > We do not maintain a roadmap of community feature requests, however we invite you to contribute and we will gladly review your merge requests.
+
+### v2 to v3 Upgrade Guide
+
+There are several breaking changes with v3.0. See the [v3.0 changelog](changelog/3.0.md) to learn more.
+
+#### What's Changed
+
+- The v3.0 release does not add any features and is focused on namespace breaking changes.
+- The `glamstack/google-auth-sdk` has been abandoned and has been renamed to `gitlab-it/google-auth-sdk`.
+- The namespace changed from `Glamstack\GoogleAuth` to `GitlabIt\GoogleAuth`.
+- Changed from a modified version of [Calendar Versioning (CalVer)](https://calver.org/) to using [Semantic Versioning (SemVer)](https://semver.org/).
+- License changed from `Apache 2.0` to `MIT`
+
+#### Migration Steps
+
+> This package is included as a dependency in `gitlab-it/google-*` SDK packages. These steps are only necessary if `glamstack/google-auth-sdk` exists in your `composer.json` file. Otherwise, simply update the `gitlab-it/google-*` SDK packages to `^3.0`.
+
+1. Remove `glamstack/google-auth-sdk` from `composer.json` and add `"gitlab-it/google-auth-sdk": "^3.0"`, then run `composer update`.
+2. Perform a find and replace across your code base from `Glamstack\GoogleAuth` to `GitlabIt\GoogleAuth`.
 
 ### Maintainers
 
@@ -23,7 +42,7 @@ This package is used to authenticate with the Google OAuth2 Sever utilizing a [G
 
 The OAUTH service will return a **short-lived API token** that can be used with the [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) to perform `GET`, `POST`, `PATCH`, `DELETE`, etc. API requests that can be found in the [Google API Explorer](https://developers.google.com/apis-explorer) documentation.
 
-To provide a streamlined developer experience, this SDK will either take a `file_path` parameter that points to your JSON API key's storage path, or you can provide the JSON API key as a string in the `json_key` parameter. 
+To provide a streamlined developer experience, this SDK will either take a `file_path` parameter that points to your JSON API key's storage path, or you can provide the JSON API key as a string in the `json_key` parameter.
 
 This SDK does not utilize any `.env` files or configuration files, rather those should be configured in the application calling this SDK.
 
@@ -37,7 +56,7 @@ You can learn more about the Authorization Scopes required by referencing the [G
 
 ```php
 // Option 1
-$google_auth = new \Glamstack\GoogleAuth\AuthClient([
+$google_auth = new \Gitlabit\GoogleAuth\AuthClient([
     // ...
     'api_scopes' => ['https://www.googleapis.com/auth/admin.directory.user'],
 ]);
@@ -50,7 +69,7 @@ $api_scopes = [
     https://www.googleapis.com/auth/cloudplatformprojects
 ];
 
-$google_auth = new \Glamstack\GoogleAuth\AuthClient([
+$google_auth = new \Gitlabit\GoogleAuth\AuthClient([
     // ...
     'api_scopes' => $api_scopes,
 ]);
@@ -61,7 +80,7 @@ $google_auth = new \Glamstack\GoogleAuth\AuthClient([
 > You can provide either the `file_path` or the `json_key` as a string.
 
 ```php
-$google_auth = new \Glamstack\GoogleAuth\AuthClient([
+$google_auth = new \Gitlabit\GoogleAuth\AuthClient([
     // ...
     'file_path' => storage_path('keys/google_json_api_key.json'),
 ]);
@@ -80,7 +99,7 @@ $service_account = \App\Models\GoogleServiceAccount::where('id', '123456')->firs
 // Get JSON key string from database column that has an encrypted value
 $json_key_string = decrypt($service_account->json_key);
 
-$google_auth = new \Glamstack\GoogleAuth\AuthClient([
+$google_auth = new \Gitlabit\GoogleAuth\AuthClient([
     // ...
     'json_key' => $json_key_string,
 ]);
@@ -99,7 +118,7 @@ This email address is that of a user account in Google Workspace that contains t
 When running in production, this should be the email address of a bot service account that you have created as a Google Workspace user that has permissions scoped to the automation that your application provides.
 
 ```php
-$google_auth = new \Glamstack\GoogleAuth\AuthClient([
+$google_auth = new \Gitlabit\GoogleAuth\AuthClient([
     // ...
     'subject_email' => 'klibby@example.com'
 ]);
@@ -109,7 +128,7 @@ $google_auth = new \Glamstack\GoogleAuth\AuthClient([
 
 ```php
 // Initialize the SDK using a JSON API key file
-$google_auth = new \Glamstack\GoogleAuth\AuthClient([
+$google_auth = new \Gitlabit\GoogleAuth\AuthClient([
     'api_scopes' => ['https://www.googleapis.com/auth/admin.directory.user'],
     'file_path' => storage_path('keys/google_json_api_key.json'),
 ]);
@@ -133,7 +152,7 @@ The examples above show basic inline usage that is suitable for most use cases. 
 ```php
 <?php
 
-use Glamstack\GoogleAuth\AuthClient;
+use Gitlabit\GoogleAuth\AuthClient;
 
 class GoogleWorkspaceUserService
 {
@@ -141,7 +160,7 @@ class GoogleWorkspaceUserService
 
     public function __construct()
     {
-        $google_auth = new \Glamstack\GoogleAuth\AuthClient([
+        $google_auth = new \Gitlabit\GoogleAuth\AuthClient([
             'api_scopes' => ['https://www.googleapis.com/auth/admin.directory.user'],
             'file_path' => storage_path('keys/google_json_api_key.json'),
         ]);
@@ -165,43 +184,26 @@ class GoogleWorkspaceUserService
 | Requirement | Version |
 | ----------- |--------|
 | PHP         | >=8.0  |
-| Laravel     | >=9.0  |
+| Laravel     | >=9.0 || >=10.0  |
 
 ### Add Composer Package
 
-This package uses [Calendar Versioning](#calendar-versioning).
+> Still Using `glamstack/google-auth-sdk` (v2.x)? See the [v3.0 Upgrade Guide](#v2-to-v3-upgrade-guide) for instructions to upgrade to `gitlab-it/google-auth-sdk:^3.0`.
 
-We recommend always using a specific version in your `composer.json` file and reviewing the [changelog](changelog/) to see the breaking changes in each release before assuming that the latest release is the right choice for your project.
-
-
-```bash
-composer require glamstack/google-auth-sdk:2.5.25
+```
+composer require gitlab-it/google-auth-sdk:^3.0
 ```
 
-> If you are contributing to this package, see [CONTRIBUTING](CONTRIBUTING.md) for instructions on configuring a local composer package with symlinks.
+If you are contributing to this package, see [CONTRIBUTING.md](CONTRIBUTING.md) for instructions on configuring a local composer package with symlinks.
 
 ### Related SDK Packages
 
-This SDK provides authentication to be able to use the generic [Laravel HTTP Client](https://laravel.com/docs/8.x/http-client) with any endpoint that can be found in the [Google API Explorer](https://developers.google.com/apis-explorer).
+This SDK provides authentication to be able to use the generic [Laravel HTTP Client](https://laravel.com/docs/10.x/http-client) with any endpoint that can be found in the [Google API Explorer](https://developers.google.com/apis-explorer).
 
 We have created additional packages that provide defined methods for some of the common service endpoints that GitLab IT uses if you don't want to specify the endpoints yourself.
 
-* [google-workspace-sdk](https://gitlab.com/glamstack/google-workspace-sdk)
-* [google-cloud-sdk](https://gitlab.com/glamstack/google-cloud-sdk)
-
-### Calendar Versioning
-
-The GitLab IT Engineering team uses a modified version of [Calendar Versioning (CalVer)](https://calver.org/) instead of [Semantic Versioning (SemVer)](https://semver.org/). CalVer has a YY (Ex. 2021 => 21) but having a version `21.xx` feels unintuitive to us. Since our team started this in 2021, we decided to use the last integer of the year only (2021 => 1.x, 2022 => 2.x, etc).
-
-The version number represents the release date in `vY.M.D` format.
-
-#### Why We Don't Use Semantic Versioning
-
-1. We are continuously shipping to `main`/`master`/`production` and make breaking changes in most releases, so having semantic backwards-compatible version numbers is unintuitive for us.
-1. We don't like to debate what to call our release/milestone and whether it's a major, minor, or patch release. We simply write code, write a changelog, and ship it on the day that it's done. The changelog publication date becomes the tagged version number (Ex. `2022-02-01` is `v2.2.1`). We may refer to a bigger version number for larger releases (Ex. `v2.2`), however this is only for monthly milestone planning and canonical purposes only. All code tags include the day of release (Ex. `v2.2.1`).
-1. This allows us to automate using GitLab CI/CD to automate the version tagging process based on the date the pipeline job runs.
-1. We update each of our project `composer.json` files that use this package to specific or new version numbers during scheduled change windows without worrying about differences and/or breaking changes with "staying up to date with the latest version". We don't maintain any forks or divergent branches.
-1. Our packages use underlying packages in your existing Laravel application, so keeping your Laravel application version up-to-date addresses most security concerns.
+* [google-workspace-sdk](https://gitlab.com/gitlab-it/google-workspace-sdk)
+* [google-cloud-sdk](https://gitlab.com/gitlab-it/google-cloud-sdk)
 
 ## Logging Configuration
 
@@ -249,11 +251,12 @@ Exception : Google SDK Authentication Error. Invalid JWT Signature.
 Exception : Invalid OAuth scope or ID token audience provided.
 ```
 
-## Test Suite
+## Testing
 
 There are both Unit and Feature test for this SDK. All unit test can be run out of the box, while feature test will require two keys to be loaded into the `tests/Storage/keys/` directory.
 
 ### Feature Test Key Names
+
 1. `integration_test_key.json`
    - This should be a valid JSON key
    - Used to verify `authenticate` function will return a proper Google API OAuth Token
@@ -263,7 +266,13 @@ There are both Unit and Feature test for this SDK. All unit test can be run out 
 
 ## Issue Tracking and Bug Reports
 
-Please visit our [issue tracker](https://gitlab.com/gitlab-com/business-technology/engineering/access-manager/packages/composer/google-auth-sdk/-/issues) and create an issue or comment on an existing issue.
+> **Disclaimer:** This is not an official package maintained by the GitLab or Google product and development teams. This is an internal tool that we use in the GitLab IT department that we have open sourced as part of our company values.
+>
+> Please use at your own risk and create merge requests for any bugs that you encounter.
+>
+> We do not maintain a roadmap of community feature requests, however we invite you to contribute and we will gladly review your merge requests.
+
+For GitLab team members, please create an issue in [gitlab-it/google-auth-sdk](https://gitlab.com/gitlab-it/google-auth-sdk/-/issues) (public) or [gitlab-com/it/dev/issue-tracker](https://gitlab.com/gitlab-com/it/dev/issue-tracker) (confidential).
 
 ## Contributing
 

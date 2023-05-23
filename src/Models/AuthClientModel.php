@@ -1,6 +1,6 @@
 <?php
 
-namespace Glamstack\GoogleAuth\Models;
+namespace Gitlabit\GoogleAuth\Models;
 
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
@@ -8,7 +8,8 @@ class AuthClientModel
 {
     private OptionsResolver $resolver;
 
-    public function __construct(){
+    public function __construct()
+    {
         $this->resolver = new OptionsResolver();
     }
 

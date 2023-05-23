@@ -1,8 +1,8 @@
 <?php
 
-namespace Glamstack\GoogleAuth\Tests\Fakes;
+namespace Gitlabit\GoogleAuth\Tests\Fakes;
 
-use Glamstack\GoogleAuth\AuthClient;
+use Gitlabit\GoogleAuth\AuthClient;
 use Illuminate\Support\Facades\Http;
 
 class AuthClientFake extends AuthClient

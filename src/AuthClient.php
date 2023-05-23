@@ -1,8 +1,8 @@
 <?php
 
-namespace Glamstack\GoogleAuth;
+namespace Gitlabit\GoogleAuth;
 
-use Glamstack\GoogleAuth\Models\AuthClientModel;
+use Gitlabit\GoogleAuth\Models\AuthClientModel;
 use Illuminate\Support\Facades\Http;
 use Exception;
 
@@ -10,11 +10,11 @@ class AuthClient
 {
     // Standard parameters for building JWT request with Google OAuth Server.
     // They are put here for easy changing if necessary
-    const AUTH_BASE_URL = 'https://oauth2.googleapis.com/token';
-    const AUTH_ALGORITHM = 'RS256';
-    const AUTH_TYPE = 'JWT';
-    const AUTH_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
-    const ENCRYPT_METHOD = 'sha256';
+    public const AUTH_BASE_URL = 'https://oauth2.googleapis.com/token';
+    public const AUTH_ALGORITHM = 'RS256';
+    public const AUTH_TYPE = 'JWT';
+    public const AUTH_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
+    public const ENCRYPT_METHOD = 'sha256';
 
     private array $connection_config;
     private AuthClientModel $auth_model;
@@ -31,8 +31,7 @@ class AuthClient
      */
     public function __construct(
         array $connection_config = []
-    )
-    {
+    ) {
         // Create a new AuthClientModel
         $this->auth_model = new AuthClientModel();
 
@@ -125,7 +124,7 @@ class AuthClient
         // access_token from the response
         $response = $this->sendAuthRequest($jwt);
 
-        if(property_exists($response->object, 'access_token')){
+        if (property_exists($response->object, 'access_token')) {
             return $response->object->access_token;
         } else {
             throw new Exception('Google OAuth2 Authentication Failed', 500);
@@ -393,7 +392,7 @@ class AuthClient
         if (!$response->status->successful) {
             if (property_exists($response->object, 'error')) {
                 //TODO: Return an exception
-                throw new Exception('Google SDK Authentication Error. ' . $response->object->error_description, $response->status->code );
+                throw new Exception('Google SDK Authentication Error. ' . $response->object->error_description, $response->status->code);
             } else {
                 //TODO: return an exception
                 throw new Exception('The Google SDK authentication attempt failed due to an unknown reason in the sendAuthRequest method.', 500);

@@ -1,6 +1,6 @@
 <?php
 
-namespace Glamstack\GoogleAuth;
+namespace Gitlabit\GoogleAuth;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;

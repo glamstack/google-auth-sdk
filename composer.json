@@ -1,8 +1,8 @@
 {
-    "name": "glamstack/google-auth-sdk",
+    "name": "gitlab-it/google-auth-sdk",
     "description": "Google Auth API SDK for Laravel",
     "keywords": [
-        "Glamstack",
+        "Gitlab",
         "authentication",
         "authclient",
         "google-auth",
@@ -11,7 +11,7 @@
         "laravel",
         "apiclient"
     ],
-    "license": "Apache-2.0",
+    "license": "MIT",
     "authors": [
         {
             "name": "Dillon Wheeler",
@@ -32,25 +32,25 @@
         "ext-openssl": "*"
     },
     "require-dev": {
-        "nunomaduro/larastan": "^1.0",
+        "nunomaduro/larastan": "^1.0 || ^2.0",
         "orchestra/testbench": "^7.4",
-        "pestphp/pest": "^1.21",
-        "pestphp/pest-plugin-laravel": "^1.2"
+        "pestphp/pest": "^1.21 || ^2.0",
+        "pestphp/pest-plugin-laravel": "^1.2 || ^2.0"
     },
     "autoload": {
         "psr-4": {
-            "Glamstack\\GoogleAuth\\": "src/"
+            "Gitlabit\\GoogleAuth\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Glamstack\\GoogleAuth\\Tests\\": "tests/"
+            "Gitlabit\\GoogleAuth\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
-           "providers": [
-                "Glamstack\\GoogleAuth\\GoogleAuthServiceProvider"
+            "providers": [
+                "Gitlabit\\GoogleAuth\\GoogleAuthServiceProvider"
             ]
         }
     },

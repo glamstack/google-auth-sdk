@@ -1,8 +1,8 @@
 <?php
 
-namespace Glamstack\GoogleAuth\Tests;
+namespace Gitlabit\GoogleAuth\Tests;
 
-use Glamstack\GoogleAuth\GoogleAuthServiceProvider;
+use Gitlabit\GoogleAuth\GoogleAuthServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
