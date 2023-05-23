@@ -192,7 +192,7 @@ it('can base64 encode an input', function () {
         'json_key_file_path' => 'tests/fakes/fake_key_file.json'
     ];
     $client = new AuthClientFake($file_path_connection_config);
-    $encoded_string = $client->base64_url_encode('testing_input');
+    $encoded_string = $client->base64UrlEncode('testing_input');
     expect($encoded_string)->toBe('dGVzdGluZ19pbnB1dA');
 });
 
